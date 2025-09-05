@@ -11,6 +11,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/mobile.css">
     
     <style>
@@ -78,103 +80,57 @@
 </head>
 <body class="bg-gray-900 text-white">
 
-    <!-- Live indicator banner -->
-    <div class="fixed top-0 left-0 right-0 z-50 live-badge text-center py-1 text-xs font-bold text-white live-pulse safe-area-top" role="banner" aria-live="polite">
+    <!-- Compact Live indicator -->
+    <div class="fixed top-0 left-0 right-0 bg-red-600 text-center py-1 text-xs font-medium text-white safe-area-top z-50" role="banner" aria-live="polite">
         <span class="sr-only">Live updates active for Week 1 scoring</span>
-        🔴 LIVE WEEK 1 SCORING
+        <div class="flex items-center justify-center gap-1">
+            <div class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            <span>LIVE</span>
+        </div>
     </div>
 
-    <!-- Header -->
-    <div class="live-header sticky top-6 z-40 backdrop-blur-md">
-        <div class="px-4 py-4 pt-8">
-            <!-- Title -->
-            <div class="text-center mb-4">
-                <h1 class="text-2xl font-black text-white mb-1">
-                    RFFL WEEK 1 <span class="text-red-400">LIVE</span>
+    <!-- Compact Header -->
+    <div class="bg-gray-900/95 backdrop-blur-sm sticky top-5 z-40">
+        <div class="px-4 py-3">
+            <!-- Streamlined Title -->
+            <div class="text-center mb-3">
+                <h1 class="text-lg font-bold text-white">
+                    RFFL WEEK 1 <span class="text-red-400">vs MEDIAN</span>
                 </h1>
-                <div class="text-lg font-bold bg-gradient-to-r from-red-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    vs. MEDIAN
-                </div>
                 <div class="text-xs text-gray-400 mt-1">
-                    <span id="live-indicator">● LIVE</span> • Last update: <span id="last-update-time">now</span>
+                    Updated: <span id="last-update-time" class="text-gray-300">now</span>
                 </div>
             </div>
 
-            <!-- Enhanced Live Median Display -->
-            <div class="median-live rounded-2xl p-4 content-stack">
-                <div class="text-center">
-                    <div class="text-micro text-gray-300 mb-1">Current League Median</div>
-                    <div id="live-median" class="text-display text-white live-pulse">
-                        <span class="text-red-400" id="median-value">--</span>
+            <!-- Compact Median Display -->
+            <div class="bg-gray-800/50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-sm">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-red-400" id="median-value">--</div>
+                        <div class="text-xs text-gray-400">Median</div>
                     </div>
-                    <div class="text-caption text-gray-400 mt-1">
-                        6th: <span id="sixth-score" class="text-warning-400">--</span> • 
-                        7th: <span id="seventh-score" class="text-warning-400">--</span>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-white" id="win-lose-split">0W-0L</div>
+                        <div class="text-xs text-gray-400">Record</div>
                     </div>
-                    
-                    <!-- Enhanced Score Range Visualization -->
-                    <div class="mt-4">
-                        <div class="median-tracker h-3 rounded-full relative overflow-hidden">
-                            <div class="median-line absolute top-0 left-1/2" id="median-marker"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-400 mt-2">
-                            <div class="flex flex-col items-start">
-                                <span class="text-error-400 font-medium" id="low-score">--</span>
-                                <span class="text-micro opacity-70">Low</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <span class="text-median-color font-medium" id="median-display">--</span>
-                                <span class="text-micro opacity-70">Median</span>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-success-400 font-medium" id="high-score">--</span>
-                                <span class="text-micro opacity-70">High</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Win/Loss Distribution -->
-                    <div class="mt-4 pt-3 border-t border-gray-700">
-                        <div class="flex items-center justify-center gap-6 text-sm">
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-success-500"></div>
-                                <span class="text-success-400 font-medium" id="win-count">0</span>
-                                <span class="text-caption text-gray-400">Above</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-error-500"></div>
-                                <span class="text-error-400 font-medium" id="loss-count">0</span>
-                                <span class="text-caption text-gray-400">Below</span>
-                            </div>
-                        </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-yellow-400" id="live-count">0</div>
+                        <div class="text-xs text-gray-400">Live</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Live stats -->
-            <div class="flex justify-center gap-8 mt-4 text-center">
-                <div>
-                    <div id="live-count" class="text-xl font-black text-red-400">0</div>
-                    <div class="text-xs text-gray-400">Live Games</div>
-                </div>
-                <div>
-                    <div id="upcoming-count" class="text-xl font-black text-yellow-400">0</div>
-                    <div class="text-xs text-gray-400">Pre-Game</div>
-                </div>
-                <div>
-                    <div id="win-lose-split" class="text-sm font-bold text-gray-300">0W-0L</div>
-                    <div class="text-xs text-gray-400">Current vs Median</div>
-                </div>
-            </div>
         </div>
     </div>
 
     <!-- Live leaderboard -->
     <div class="px-4 py-4">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-white">Live Leaderboard</h2>
-            <button id="auto-refresh-toggle" class="px-3 py-1 bg-red-600 text-white text-xs rounded-full font-medium touch-target" aria-label="Toggle automatic refresh" role="switch" aria-checked="true">
-                <span aria-hidden="true">AUTO: ON</span>
+            <div>
+                <h2 class="text-lg font-semibold text-white">Teams</h2>
+            </div>
+            <button id="auto-refresh-toggle" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors" aria-label="Toggle automatic refresh" role="switch" aria-checked="true">
+                <span aria-hidden="true">AUTO</span>
             </button>
         </div>
         
@@ -184,14 +140,8 @@
     </div>
 
     <!-- Bottom safe area -->
-    <div class="h-20 safe-area-bottom"></div>
+    <div class="h-6 safe-area-bottom"></div>
 
-    <!-- Refresh FAB -->
-    <button id="refresh-fab" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-all">
-        <svg id="refresh-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-        </svg>
-    </button>
 
     <!-- Include modules -->
     <script src="js/median-calculator.js"></script>
@@ -201,52 +151,120 @@
 
     <script>
         class LiveMobileApp {
-            constructor() {
+            constructor(options = {}) {
+                this.debugMode = options.debug || new URLSearchParams(window.location.search).has('debug');
                 this.isLive = true;
                 this.autoRefresh = true;
-                this.refreshInterval = 30000; // 30 seconds
+                this.refreshInterval = options.refreshInterval || 30000; // 30 seconds
                 this.currentData = null;
                 this.lastMedian = null;
                 this.refreshTimer = null;
+                this.retryCount = 0;
+                this.maxRetries = 3;
                 
                 this.init();
             }
 
             async init() {
-                console.log('🔴 Live Mobile App initializing...');
-                
-                // Load initial data
-                await this.loadLiveData();
-                
-                // Setup refresh timer
-                this.startAutoRefresh();
-                
-                // Setup event handlers
-                this.setupEventHandlers();
-                
-                console.log('✅ Live Mobile App ready!');
+                try {
+                    this.debugMode && console.log('🔴 Live Mobile App initializing...');
+                    
+                    // Load initial data
+                    await this.loadLiveData();
+                    
+                    // Setup refresh timer
+                    this.startAutoRefresh();
+                    
+                    // Setup event handlers
+                    this.setupEventHandlers();
+                    
+                    this.debugMode && console.log('✅ Live Mobile App ready!');
+                } catch (error) {
+                    console.error('Failed to initialize Live Mobile App:', error);
+                    this.showErrorState();
+                }
             }
 
             async loadLiveData() {
                 try {
+                    // Try to fetch from ESPN API first
                     // In a real implementation, this would call your ESPN API
                     // For now, we'll simulate with the live data from your CLI
-                    const response = await fetch('/api/live-scores'); // This endpoint would need to be created
+                    const response = await this.fetchWithTimeout('/api/live-scores', 5000);
                     
-                    // Fallback to simulated live data for demo
+                    if (response && response.ok) {
+                        this.currentData = await response.json();
+                    } else {
+                        throw new Error('API response not ok');
+                    }
+                    
+                    this.retryCount = 0; // Reset retry count on success
+                    
+                } catch (error) {
+                    this.debugMode && console.warn('API fetch failed, using fallback data:', error.message);
+                    
+                    // Use fallback data
                     this.currentData = this.getSimulatedLiveData();
+                    this.retryCount++;
                     
+                    if (this.retryCount >= this.maxRetries) {
+                        this.showConnectionIssue();
+                    }
+                } finally {
                     this.processLiveData();
                     this.renderLiveScores();
                     this.updateStats();
-                    
-                } catch (error) {
-                    console.error('Failed to load live data:', error);
-                    // Use fallback data
-                    this.currentData = this.getSimulatedLiveData();
-                    this.processLiveData();
-                    this.renderLiveScores();
                 }
+            }
+
+            // Utility methods for better error handling
+            async fetchWithTimeout(url, timeout = 5000) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                try {
+                    const response = await fetch(url, { 
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw error;
+                }
+            }
+
+            showErrorState() {
+                const container = document.getElementById('live-leaderboard');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="text-4xl mb-4">⚠️</div>
+                            <h3 class="text-lg font-bold text-white mb-2">Unable to Load Data</h3>
+                            <p class="text-gray-400 mb-4">Please check your connection and try again.</p>
+                            <button onclick="window.liveApp.loadLiveData()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            showConnectionIssue() {
+                if (this.debugMode) console.warn('Connection issues detected after', this.maxRetries, 'retries');
+                
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-20 left-4 right-4 bg-yellow-600 text-white p-3 rounded-lg text-sm z-50';
+                toast.innerHTML = '⚠️ Connection issues detected. Using cached data.';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 5000);
             }
 
             getSimulatedLiveData() {
@@ -329,10 +347,13 @@
                 });
                 
                 // Update last update time
-                document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                const updateTimeElement = document.getElementById('last-update-time');
+                if (updateTimeElement) {
+                    updateTimeElement.textContent = new Date().toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
             }
 
             createLiveCard(team, rank) {
@@ -450,13 +471,15 @@
 
             updateStats() {
                 const liveGames = this.currentData.filter(t => t.isLive).length;
-                const upcomingGames = this.currentData.length - liveGames;
                 const wins = this.currentData.filter(t => t.result === 'WIN').length;
                 const losses = this.currentData.filter(t => t.result === 'LOSS').length;
                 
-                document.getElementById('live-count').textContent = liveGames;
-                document.getElementById('upcoming-count').textContent = upcomingGames;
-                document.getElementById('win-lose-split').textContent = `${wins}W-${losses}L`;
+                // Update the compact display
+                const liveCountElement = document.getElementById('live-count');
+                const winLoseSplitElement = document.getElementById('win-lose-split');
+                
+                if (liveCountElement) liveCountElement.textContent = liveGames;
+                if (winLoseSplitElement) winLoseSplitElement.textContent = `${wins}W-${losses}L`;
             }
 
             startAutoRefresh() {
@@ -474,23 +497,13 @@
             }
 
             setupEventHandlers() {
-                // Refresh FAB
-                document.getElementById('refresh-fab').addEventListener('click', () => {
-                    this.loadLiveData();
-                    
-                    // Visual feedback
-                    const icon = document.getElementById('refresh-icon');
-                    icon.classList.add('animate-spin');
-                    setTimeout(() => icon.classList.remove('animate-spin'), 1000);
-                });
-                
                 // Auto-refresh toggle
                 document.getElementById('auto-refresh-toggle').addEventListener('click', (e) => {
                     this.autoRefresh = !this.autoRefresh;
-                    e.target.textContent = this.autoRefresh ? 'AUTO: ON' : 'AUTO: OFF';
+                    e.target.textContent = this.autoRefresh ? 'AUTO' : 'PAUSED';
                     e.target.className = this.autoRefresh ? 
-                        'px-3 py-1 bg-red-600 text-white text-xs rounded-full font-medium' :
-                        'px-3 py-1 bg-gray-600 text-white text-xs rounded-full font-medium';
+                        'text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors' :
+                        'text-xs px-2 py-1 bg-red-700 hover:bg-red-600 text-red-200 rounded transition-colors';
                     
                     if (this.autoRefresh) {
                         this.startAutoRefresh();
@@ -508,9 +521,25 @@
             }
         }
 
-        // Initialize the live mobile app
+        // Initialize the live mobile app with error handling
         document.addEventListener('DOMContentLoaded', () => {
-            window.liveApp = new LiveMobileApp();
+            try {
+                const debugMode = new URLSearchParams(window.location.search).has('debug');
+                window.liveApp = new LiveMobileApp({ debug: debugMode });
+            } catch (error) {
+                console.error('Failed to initialize Live Mobile App:', error);
+                document.body.innerHTML = `
+                    <div class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+                        <div class="text-center">
+                            <h1 class="text-xl font-bold mb-2">⚠️ App Failed to Load</h1>
+                            <p class="text-gray-400">Please refresh the page to try again.</p>
+                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-red-600 rounded text-white">
+                                Reload Page
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>

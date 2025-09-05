@@ -34,15 +34,63 @@ else
 fi
 
 # Start the server
+OPEN_INDEX=false
+OPEN_STYLEGUIDE=false
+OPEN_LIVE=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --open)
+      OPEN_INDEX=true
+      ;;
+    --open-styleguide)
+      OPEN_STYLEGUIDE=true
+      ;;
+    --open-live)
+      OPEN_LIVE=true
+      ;;
+  esac
+done
+
+open_url() {
+  local url="$1"
+  if command -v open >/dev/null 2>&1; then
+    open "$url" >/dev/null 2>&1 &
+  elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$url" >/dev/null 2>&1 &
+  else
+    echo -e "${YELLOW}Cannot auto-open browser. Please visit:${NC} $url"
+  fi
+}
+
 echo -e "${GREEN}✅ Starting development server...${NC}"
 echo ""
 echo -e "🔴 LIVE Mobile: ${BLUE}http://localhost:8000/live-mobile.html${NC} ${RED}⭐ RECOMMENDED${NC}"
 echo -e "📱 Mobile UI:   ${BLUE}http://localhost:8000/mobile.html${NC}"
 echo -e "💻 Desktop:     ${BLUE}http://localhost:8000${NC}"
 echo -e "🧪 Test Page:   ${BLUE}http://localhost:8000/test.html${NC}"
+echo -e "🎨 Style Guide: ${BLUE}http://localhost:8000/styleguide.html${NC}"
 echo ""
 echo -e "${YELLOW}Press Ctrl+C to stop the server${NC}"
 echo ""
 
-# Start HTTP server
-$PYTHON_CMD -m http.server 8000
+# Start HTTP server in background, then open browser if requested
+"$PYTHON_CMD" -m http.server 8000 &
+SERVER_PID=$!
+
+# Give the server a moment to start
+sleep 1
+
+if $OPEN_INDEX; then
+  open_url "http://localhost:8000"
+fi
+if $OPEN_STYLEGUIDE; then
+  open_url "http://localhost:8000/styleguide.html"
+fi
+if $OPEN_LIVE; then
+  open_url "http://localhost:8000/live-mobile.html"
+fi
+
+# Forward Ctrl+C to child and wait
+trap 'echo; echo -e "${RED}Stopping server...${NC}"; kill $SERVER_PID 2>/dev/null' INT TERM
+wait $SERVER_PID

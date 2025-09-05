@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean UI Test - RFFL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Compact Live indicator -->
+    <div class="fixed top-0 left-0 right-0 bg-red-600 text-center py-1 text-xs font-medium text-white safe-area-top z-50" role="banner" aria-live="polite">
+        <div class="flex items-center justify-center gap-1">
+            <div class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            <span>LIVE</span>
+        </div>
+    </div>
+
+    <!-- Compact Header -->
+    <div class="bg-gray-900/95 backdrop-blur-sm sticky top-5 z-40">
+        <div class="px-4 py-3">
+            <!-- Streamlined Title -->
+            <div class="text-center mb-3">
+                <h1 class="text-lg font-bold text-white">
+                    RFFL WEEK 1 <span class="text-red-400">vs MEDIAN</span>
+                </h1>
+                <div class="text-xs text-gray-400 mt-1">
+                    Updated: <span class="text-gray-300">3:40 PM</span>
+                </div>
+            </div>
+
+            <!-- Compact Median Display -->
+            <div class="bg-gray-800/50 rounded-lg p-3">
+                <div class="flex items-center justify-between text-sm">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-red-400">101.2</div>
+                        <div class="text-xs text-gray-400">Median</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-white">6W-6L</div>
+                        <div class="text-xs text-gray-400">Record</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-yellow-400">8</div>
+                        <div class="text-xs text-gray-400">Live</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Live leaderboard -->
+    <div class="px-4 py-4">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-lg font-semibold text-white">Teams</h2>
+            </div>
+            <button class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors">
+                AUTO
+            </button>
+        </div>
+        
+        <!-- Sample team cards -->
+        <div class="space-y-2">
+            <!-- Leader Card -->
+            <div class="card card--interactive card--leader">
+                <div class="flex items-center justify-between p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center text-sm font-bold">1</div>
+                        <div>
+                            <div class="text-sm font-bold text-white flex items-center gap-2">
+                                MXLB
+                                <span class="badge badge--live">
+                                    <span class="badge__icon"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-400">JOHANSEN & ABREGO</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-white">121.4</div>
+                        <div class="text-xs text-gray-400">→ 105.3</div>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-gray-400">vs Median</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-green-400">+20.2</span>
+                            <span class="badge badge--success">WIN</span>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress__fill progress--success" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Winning Card -->
+            <div class="card card--interactive card--winning">
+                <div class="flex items-center justify-between p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                            <div class="text-sm font-bold text-white flex items-center gap-2">
+                                PCX
+                                <span class="badge badge--upcoming">PRE</span>
+                            </div>
+                            <div class="text-xs text-gray-400">THORSEN KYLE</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-white">105.2</div>
+                        <div class="text-xs text-gray-400">Projected</div>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-400">vs Median</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-green-400">+4.0</span>
+                            <span class="badge badge--success">WIN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Losing Card -->
+            <div class="card card--interactive card--losing">
+                <div class="flex items-center justify-between p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center text-sm font-bold">11</div>
+                        <div>
+                            <div class="text-sm font-bold text-white flex items-center gap-2">
+                                TACT
+                                <span class="badge badge--live">
+                                    <span class="badge__icon"></span>
+                                    LIVE
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-400">CUPERY & SOVIAK</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-white">92.0</div>
+                        <div class="text-xs text-gray-400">→ 94.2</div>
+                    </div>
+                </div>
+                <div class="px-4 pb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-gray-400">vs Median</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-red-400">-9.2</span>
+                            <span class="badge badge--error">LOSS</span>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress__fill progress--error" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom safe area -->
+    <div class="h-6 safe-area-bottom"></div>
+
+    <!-- Status card -->
+    <div class="fixed bottom-4 left-4 right-4 bg-green-600 text-white p-3 rounded-lg text-center z-50">
+        <div class="text-sm font-bold">✅ Clean UI Design Active!</div>
+        <div class="text-xs mt-1">Much more content visible, no floating clutter</div>
+    </div>
+
+    <script>
+        console.log('🧹 Clean UI Test loaded successfully!');
+        
+        // Add some interactive behavior
+        document.querySelectorAll('.card--interactive').forEach(card => {
+            card.addEventListener('click', function() {
+                const team = this.querySelector('.text-sm.font-bold').textContent.trim();
+                console.log(`Clicked on team: ${team}`);
+                
+                // Brief visual feedback
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Auto-refresh toggle
+        document.querySelector('button').addEventListener('click', function() {
+            const isAuto = this.textContent === 'AUTO';
+            this.textContent = isAuto ? 'PAUSED' : 'AUTO';
+            this.className = isAuto ? 
+                'text-xs px-2 py-1 bg-red-700 hover:bg-red-600 text-red-200 rounded transition-colors' :
+                'text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors';
+        });
+
+        // Remove status card after 5 seconds
+        setTimeout(() => {
+            const statusCard = document.querySelector('.fixed.bottom-4');
+            if (statusCard) {
+                statusCard.style.opacity = '0';
+                statusCard.style.transform = 'translateY(20px)';
+                setTimeout(() => statusCard.remove(), 300);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UX Improvements Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body class="bg-gray-900 text-white p-6">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-center">UI/UX Improvements Test</h1>
+        
+        <!-- Test Improved Color Variables -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">Enhanced Colors</h2>
+            <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                <div class="p-3 rounded" style="background-color: var(--text-success)">Success</div>
+                <div class="p-3 rounded" style="background-color: var(--text-error)">Error</div>
+                <div class="p-3 rounded" style="background-color: var(--text-warning)">Warning</div>
+            </div>
+        </div>
+        
+        <!-- Test Improved Cards -->
+        <div class="mb-8">
+            <h2 class="text--title mb-4">Enhanced Card Components</h2>
+            <div class="stack--sm">
+                <div class="card card--winning">
+                    <div class="flex justify-between items-center">
+                        <span class="text--body">Winning Team</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text--title" style="color: var(--color-success-500)">+5.2</span>
+                            <span class="badge badge--success">WIN</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card--losing">
+                    <div class="flex justify-between items-center">
+                        <span class="text--body">Losing Team</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text--title" style="color: var(--color-error-500)">-2.1</span>
+                            <span class="badge badge--error">LOSS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card--leader">
+                    <div class="flex justify-between items-center">
+                        <span class="text--body">Leader Team</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text--title" style="color: var(--color-success-500)">+12.4</span>
+                            <span class="badge badge--live"><span class="badge__icon"></span>LIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Component System -->
+        <div class="mb-8">
+            <h2 class="text--title mb-4">Component System Tests</h2>
+            
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="stat-card stat-card--live">
+                    <div class="stat-card__value">6</div>
+                    <div class="stat-card__label">Live Games</div>
+                </div>
+                <div class="stat-card stat-card--upcoming">
+                    <div class="stat-card__value">3</div>
+                    <div class="stat-card__label">Pre-Game</div>
+                </div>
+                <div class="stat-card stat-card--median">
+                    <div class="stat-card__value">101.2</div>
+                    <div class="stat-card__label">Median</div>
+                </div>
+            </div>
+            
+            <!-- Button System -->
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button class="btn btn--primary">Primary Button</button>
+                <button class="btn btn--secondary">Secondary</button>
+                <button class="btn btn--success btn--sm">Success</button>
+                <button class="btn btn--error btn--xs">Error</button>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="progress">
+                    <div class="progress__fill progress--success" style="width: 75%"></div>
+                </div>
+            </div>
+            
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <span class="badge badge--live"><span class="badge__icon"></span>LIVE</span>
+                <span class="badge badge--success">WIN</span>
+                <span class="badge badge--error">LOSS</span>
+                <span class="badge badge--warning">TIE</span>
+                <span class="badge badge--upcoming">PRE</span>
+            </div>
+        </div>
+        
+        <!-- Test Typography System -->
+        <div class="mb-8">
+            <h2 class="text--title mb-4">Typography Hierarchy</h2>
+            <div class="stack">
+                <div class="text--display">Display Text</div>
+                <div class="text--headline">Headline Text</div>
+                <div class="text--title">Title Text</div>
+                <div class="text--body">Body text for readable content</div>
+                <div class="text--caption">Caption text for supplementary information</div>
+                <div class="text--micro">Micro text for labels</div>
+            </div>
+        </div>
+        
+        <!-- Test Status using component system -->
+        <div class="card card--winning text-center">
+            <div class="text--title" style="color: var(--color-success-500)">✅ Design System Active!</div>
+            <div class="text--caption mt-2">All components loaded successfully</div>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <a href="live-mobile.html" class="btn btn--primary">
+                → Test Live Mobile Version
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Quick test for JavaScript improvements
+        console.log('UI/UX Test Page Loaded');
+        
+        // Test debug mode detection
+        const hasDebug = new URLSearchParams(window.location.search).has('debug');
+        if (hasDebug) {
+            console.log('Debug mode is active');
+        }
+        
+        // Test if CSS variables are working
+        const computedStyle = getComputedStyle(document.documentElement);
+        const successColor = computedStyle.getPropertyValue('--text-success').trim();
+        console.log('Success color variable:', successColor);
+        
+        // Add debug info
+        if (hasDebug) {
+            const debugInfo = document.createElement('div');
+            debugInfo.className = 'fixed bottom-4 left-4 bg-black/50 text-xs p-2 rounded';
+            debugInfo.innerHTML = `
+                Debug Mode: ON<br>
+                Success Color: ${successColor}<br>
+                Mobile UI: ${typeof window.mobileUI !== 'undefined' ? 'Loaded' : 'Not Loaded'}
+            `;
+            document.body.appendChild(debugInfo);
+        }
+    </script>
+</body>
+</html>

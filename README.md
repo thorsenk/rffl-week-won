@@ -127,6 +127,8 @@ php -S localhost:8000
 
 Then open `http://localhost:8000` in your browser.
 
+- Style Guide: `http://localhost:8000/styleguide.html` (edit tokens live and export CSS)
+
 ## Data Sources
 
 ### RFFL Canonical Data
@@ -216,5 +218,11 @@ For issues or questions:
 - Verify Gemini API quota for recap generation
 
 ---
+### 🎨 Design System & Style Guide
+- Centralized design tokens in `css/design-tokens.css`
+- Reusable components in `css/components.css`
+- Interactive style guide powered by DesignSystemAgent at `styleguide.html`
+- Live preview token editing with export to updated CSS
+ - Optional OKLCH theme: `css/theme-oklch.css` with light/dark tokens and an adapter mapping to project tokens. Toggle in the style guide.
 
 **Note**: This webapp serves as the official source for Week 1 results. ESPN will show placeholder opponents due to platform limitations, but this application provides the authoritative median-based standings.

@@ -4,7 +4,8 @@
  */
 
 class MobileUIController {
-    constructor() {
+    constructor(options = {}) {
+        this.debugMode = options.debug || false;
         this.touchStartY = 0;
         this.touchStartTime = 0;
         this.refreshThreshold = 60;
@@ -30,26 +31,30 @@ class MobileUIController {
         this.init();
     }
     
-    // Performance monitoring setup
+    // Performance monitoring setup with improved error handling
     setupIntersectionObserver() {
         if ('IntersectionObserver' in window) {
-            this.cardObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const card = entry.target;
-                    if (entry.isIntersecting) {
-                        card.classList.add('in-viewport');
-                        // Enable animations for visible cards
-                        card.style.willChange = 'transform, opacity';
-                    } else {
-                        card.classList.remove('in-viewport');
-                        // Disable expensive properties for offscreen cards
-                        card.style.willChange = 'auto';
-                    }
+            try {
+                this.cardObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const card = entry.target;
+                        if (entry.isIntersecting) {
+                            card.classList.add('in-viewport');
+                            // Enable animations for visible cards
+                            card.style.willChange = 'transform, opacity';
+                        } else {
+                            card.classList.remove('in-viewport');
+                            // Disable expensive properties for offscreen cards
+                            card.style.willChange = 'auto';
+                        }
+                    });
+                }, {
+                    rootMargin: '50px',
+                    threshold: 0.1
                 });
-            }, {
-                rootMargin: '50px',
-                threshold: 0.1
-            });
+            } catch (error) {
+                if (this.debugMode) console.warn('IntersectionObserver setup failed:', error);
+            }
         }
     }
     
@@ -92,7 +97,7 @@ class MobileUIController {
         this.setupMedianTracker();
         this.enableHapticFeedback();
         
-        console.log('📱 Mobile UI Controller initialized');
+        if (this.debugMode) console.log('📱 Mobile UI Controller initialized');
     }
 
     // Touch interaction handlers
@@ -335,28 +340,8 @@ class MobileUIController {
 
     // Median tracker setup
     setupMedianTracker() {
-        this.createFloatingMedianIndicator();
+        // Simplified - no floating elements needed
         this.updateMedianVisualization();
-    }
-
-    createFloatingMedianIndicator() {
-        const indicator = document.createElement('div');
-        indicator.className = 'floating-median';
-        indicator.innerHTML = `
-            <div class="text-xs">MEDIAN</div>
-            <div class="text-lg font-bold" id="floating-median-value">101.13</div>
-        `;
-        
-        // Only show on scroll
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                indicator.style.opacity = '0.9';
-            } else {
-                indicator.style.opacity = '0';
-            }
-        });
-        
-        document.body.appendChild(indicator);
     }
 
     updateMedianVisualization() {
@@ -437,14 +422,17 @@ class MobileUIController {
         }
     }
     
-    // Performance-optimized animation scheduler
+    // Performance-optimized animation scheduler with fallbacks
     scheduleAnimation(callback) {
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => {
                 requestAnimationFrame(callback);
-            });
+            }, { timeout: 100 });
         } else {
-            requestAnimationFrame(callback);
+            // Fallback for browsers without requestIdleCallback
+            setTimeout(() => {
+                requestAnimationFrame(callback);
+            }, 16); // ~60fps
         }
     }
     
@@ -467,25 +455,31 @@ class MobileUIController {
     }
 
     animateNumberChange(element, from, to) {
+        if (!element || from === to) return;
+        
         const duration = 500;
         const startTime = performance.now();
+        let animationId;
         
         const animate = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
             
-            // Easing function
+            // Easing function (ease-out cubic)
             const easeOut = 1 - Math.pow(1 - progress, 3);
             const current = from + (to - from) * easeOut;
             
             element.textContent = current.toFixed(1);
             
             if (progress < 1) {
-                requestAnimationFrame(animate);
+                animationId = requestAnimationFrame(animate);
             }
         };
         
-        requestAnimationFrame(animate);
+        animationId = requestAnimationFrame(animate);
+        
+        // Store animation ID for potential cancellation
+        element._animationId = animationId;
     }
 
     // UI state management
@@ -539,7 +533,8 @@ class MobileUIController {
 
     showTeamContextMenu(card, teamCode) {
         // Implementation for context menu
-        console.log('Show context menu for:', teamCode);
+        // TODO: Implement context menu functionality
+        if (this.debugMode) console.log('Context menu requested for:', teamCode);
     }
 
     // Refresh functionality
@@ -573,12 +568,18 @@ class MobileUIController {
 
     showRefreshLoader() {
         // Implementation for refresh loading state
-        console.log('Showing refresh loader...');
+        const loader = document.querySelector('.pull-refresh-indicator');
+        if (loader) {
+            loader.classList.add('loading', 'visible');
+        }
     }
 
     hideRefreshLoader() {
         // Implementation for hiding refresh loader
-        console.log('Hiding refresh loader...');
+        const loader = document.querySelector('.pull-refresh-indicator');
+        if (loader) {
+            loader.classList.remove('loading', 'visible');
+        }
     }
 
     async performDataRefresh() {
@@ -603,11 +604,7 @@ class MobileUIController {
 
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        toast.className = `fixed top-16 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-medium z-50 transition-all duration-300 ${
-            type === 'success' ? 'bg-green-600 text-white' :
-            type === 'error' ? 'bg-red-600 text-white' :
-            'bg-gray-700 text-gray-200'
-        }`;
+        toast.className = `toast toast--${type}`;
         toast.textContent = message;
         
         document.body.appendChild(toast);
@@ -647,11 +644,21 @@ class MobileUIController {
     }
 }
 
-// Initialize mobile UI when DOM is ready
+// Initialize mobile UI when DOM is ready with error handling
 let mobileUI;
 document.addEventListener('DOMContentLoaded', () => {
-    mobileUI = new MobileUIController();
-    window.mobileUI = mobileUI; // Make available globally
+    try {
+        const debugMode = new URLSearchParams(window.location.search).has('debug');
+        mobileUI = new MobileUIController({ debug: debugMode });
+        window.mobileUI = mobileUI; // Make available globally
+    } catch (error) {
+        console.error('Failed to initialize Mobile UI Controller:', error);
+        // Fallback: create minimal functionality
+        window.mobileUI = {
+            triggerHaptic: () => {},
+            showToast: (msg) => alert(msg)
+        };
+    }
 });
 
 // Export for module use

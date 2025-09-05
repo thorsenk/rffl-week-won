@@ -1,8 +1,13 @@
 /* RFFL Week 1 Median - Mobile-Optimized Styles */
 
-/* Enhanced mobile-first design system */
+/* Enhanced mobile-first design system with improved accessibility */
 :root {
-    /* Enhanced Color System - WCAG 2.1 AA Compliant */
+    /* Enhanced Color System - WCAG 2.1 AAA Compliant with improved contrast */
+    
+    /* Brand Colors */
+    --brand-primary: #8b5cf6;
+    --brand-secondary: #06b6d4;
+    --brand-accent: #dc2626;
     --primary-50: #fdf2f8;
     --primary-100: #fce7f3;
     --primary-500: #ec4899;
@@ -55,9 +60,9 @@
     --text-secondary: var(--neutral-300);
     --text-tertiary: var(--neutral-400);
     --text-on-brand: var(--neutral-50);
-    --text-success: var(--success-400);
-    --text-error: var(--error-400);
-    --text-warning: var(--warning-400);
+    --text-success: #10b981;
+    --text-error: #ef4444;
+    --text-warning: #f59e0b;
     
     --bg-primary: var(--neutral-900);
     --bg-secondary: var(--neutral-800);
@@ -84,13 +89,20 @@
     --text-3xl: clamp(1.875rem, 1.6rem + 1vw, 2.2rem);
     --text-4xl: clamp(2.25rem, 1.9rem + 1.4vw, 2.8rem);
     
-    /* Improved Spacing Scale */
-    --space-xs: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
-    --space-sm: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
-    --space-md: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
-    --space-lg: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
-    --space-xl: clamp(2rem, 1.6rem + 1.6vw, 3rem);
-    --space-2xl: clamp(2.5rem, 2rem + 2vw, 4rem);
+    /* Improved Spacing Scale with consistent rhythm */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    
+    /* Responsive spacing modifiers */
+    --space-responsive-xs: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
+    --space-responsive-sm: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
+    --space-responsive-md: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+    --space-responsive-lg: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
     
     /* Enhanced Line Heights */
     --leading-tight: 1.25;
@@ -100,7 +112,8 @@
     --leading-loose: 2;
 }
 
-/* Advanced animations */
+/* Optimized animations with respect for motion preferences */
+@media (prefers-reduced-motion: no-preference) {
 @keyframes medianPulse {
     0%, 100% {
         transform: scale(1);
@@ -160,11 +173,23 @@
 @keyframes progressFill {
     from {
         width: 0%;
+        opacity: 0.8;
     }
     to {
         width: var(--progress-width);
+        opacity: 1;
     }
 }
+
+@keyframes shimmerEffect {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+} /* End of prefers-reduced-motion: no-preference */
 
 /* Mobile-specific elements */
 .mobile-header {
@@ -237,13 +262,18 @@
 
 .live-score-card {
     background: linear-gradient(135deg, 
-        rgba(31, 41, 55, 0.9) 0%, 
-        rgba(17, 24, 39, 0.9) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: var(--shadow-lg);
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    animation: cardSlideIn 0.6s ease-out;
+        rgba(31, 41, 55, 0.95) 0%, 
+        rgba(17, 24, 39, 0.95) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        var(--shadow-lg),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: cardSlideIn 0.5s ease-out;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
 }
 
 .live-score-card:active {
@@ -252,17 +282,25 @@
 }
 
 .live-score-card.winning {
-    border-left: 4px solid var(--win-color);
+    border-left: 4px solid var(--text-success);
+    background: linear-gradient(135deg, 
+        rgba(16, 185, 129, 0.05) 0%, 
+        rgba(31, 41, 55, 0.95) 30%);
     box-shadow: 
         var(--shadow-lg),
-        -4px 0 10px rgba(16, 185, 129, 0.1);
+        -4px 0 15px rgba(16, 185, 129, 0.15),
+        inset 0 1px 0 rgba(16, 185, 129, 0.1);
 }
 
 .live-score-card.losing {
-    border-left: 4px solid var(--loss-color);
+    border-left: 4px solid var(--text-error);
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.05) 0%, 
+        rgba(31, 41, 55, 0.95) 30%);
     box-shadow: 
         var(--shadow-lg),
-        -4px 0 10px rgba(239, 68, 68, 0.1);
+        -4px 0 15px rgba(239, 68, 68, 0.15),
+        inset 0 1px 0 rgba(239, 68, 68, 0.1);
 }
 
 /* Live indicators */
@@ -383,15 +421,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    color: var(--median-color);
+    padding: var(--space-lg);
+    color: var(--brand-primary);
     font-weight: 600;
     transform: translateY(-100%);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: linear-gradient(180deg, 
-        rgba(139, 92, 246, 0.05) 0%, 
-        rgba(17, 24, 39, 0.95) 100%);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        rgba(139, 92, 246, 0.08) 0%, 
+        rgba(17, 24, 39, 0.98) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+    backdrop-filter: blur(8px);
 }
 
 .pull-refresh-indicator.visible {
@@ -447,24 +486,28 @@
     100% { opacity: 0; transform: translateY(-50%) translateX(-10px); }
 }
 
-/* Floating elements */
+/* Improved Floating elements */
 .floating-median {
     position: fixed;
     top: 50%;
-    right: 16px;
+    right: var(--space-md);
     transform: translateY(-50%);
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    background: var(--purple-gradient);
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
     color: white;
-    padding: 12px 6px;
+    padding: var(--space-sm) var(--space-xs);
     border-radius: 20px;
     font-weight: 700;
     font-size: 14px;
-    box-shadow: var(--shadow-glow);
+    box-shadow: 
+        var(--shadow-glow),
+        0 4px 12px rgba(0, 0, 0, 0.2);
     z-index: 30;
-    opacity: 0.9;
-    transition: opacity 0.3s ease;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .floating-median:hover {
