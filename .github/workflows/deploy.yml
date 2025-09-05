@@ -35,12 +35,35 @@ jobs:
     - name: Build webapp
       run: |
         echo "🏈 Building RFFL Week 1 Webapp..."
-        # Copy all static files (no build needed for this HTML/CSS/JS webapp)
-        cp -r . _site/
-        # Remove .git directory from site build
-        rm -rf _site/.git
+        # Create site directory
+        mkdir -p _site
+        
+        # Copy static files (excluding problematic symlinks)
+        cp -r *.html _site/ 2>/dev/null || true
+        cp -r js _site/ 2>/dev/null || true
+        cp -r css _site/ 2>/dev/null || true
+        cp -r config _site/ 2>/dev/null || true
+        cp *.md _site/ 2>/dev/null || true
+        cp serve.sh _site/ 2>/dev/null || true
+        
+        # Handle data directory carefully (skip broken symlinks)
+        if [ -d "data" ]; then
+          mkdir -p _site/data
+          # Copy real files, skip broken symlinks
+          for file in data/*; do
+            if [ -f "$file" ] && [ ! -L "$file" ]; then
+              cp "$file" _site/data/
+            elif [ -L "$file" ] && [ -f "$file" ]; then
+              cp "$file" _site/data/
+            fi
+          done
+        fi
+        
         # Ensure serve.sh is executable
-        chmod +x _site/serve.sh
+        chmod +x _site/serve.sh 2>/dev/null || true
+        
+        echo "📁 Files successfully copied to _site:"
+        ls -la _site/
         echo "✅ Build complete!"
         
     - name: Upload artifact
