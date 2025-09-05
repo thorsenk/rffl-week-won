@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Loading Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .log { 
+            background: #1a1a1a; 
+            color: #00ff00; 
+            padding: 1rem; 
+            border-radius: 8px; 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+            max-height: 400px; 
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Data Loading Fix Test</h1>
+        
+        <div class="mb-4">
+            <button id="test-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                Test Data Loading
+            </button>
+            <button id="clear-btn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg ml-2">
+                Clear Log
+            </button>
+        </div>
+        
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold mb-2">Console Log Output:</h2>
+            <div id="log" class="log">Click "Test Data Loading" to run the test...\n</div>
+        </div>
+        
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold mb-2">Data Status:</h2>
+            <div id="status" class="p-4 bg-gray-800 rounded-lg">
+                Ready to test...
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold mb-2">Test Links:</h2>
+            <div class="space-x-4">
+                <a href="live-mobile.html?debug" class="text-blue-400 hover:text-blue-300">Live Mobile (Debug)</a>
+                <a href="live-mobile.html" class="text-blue-400 hover:text-blue-300">Live Mobile (Normal)</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Redirect console.log to our display
+        const logElement = document.getElementById('log');
+        const statusElement = document.getElementById('status');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = {
+                'info': '#00ff00',
+                'warn': '#ffaa00',
+                'error': '#ff0000'
+            }[type] || '#00ff00';
+            
+            logElement.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        // Test class that mimics the LiveMobileApp data loading logic
+        class DataLoadingTest {
+            constructor() {
+                this.debugMode = true;
+                this.retryCount = 0;
+                this.maxRetries = 3;
+                this.currentData = null;
+            }
+            
+            async fetchWithTimeout(url, timeout = 5000) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                try {
+                    const response = await fetch(url, { 
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw error;
+                }
+            }
+            
+            getSimulatedLiveData() {
+                return [
+                    {team: 'MXLB', owner1: 'JOHANSEN_TYLER', owner2: 'ABREGO_JASON', isCoOwned: true, projected: 105.33, actual: 21.24, isLive: true},
+                    {team: 'PCX', owner: 'THORSEN_KYLE', projected: 105.22, actual: 0.00, isLive: false},
+                    {team: 'MRYJ', owner: 'ALDEN-ANDERSON_ANDY', projected: 105.18, actual: 0.00, isLive: false},
+                    {team: 'PKMC', owner1: 'KASPER_PAT', owner2: 'CONLON_MIKE', isCoOwned: true, projected: 104.60, actual: 0.00, isLive: false},
+                    {team: 'LNO', owner1: 'KNABE_JUSTIN', owner2: 'HAHN_CHRIS', isCoOwned: true, projected: 103.82, actual: 11.50, isLive: true},
+                    {team: 'BRIM', owner: 'FEATHERS_JASON', projected: 101.91, actual: 13.20, isLive: true},
+                    {team: 'WZRD', owner: 'OLSON_WES', projected: 100.36, actual: 0.00, isLive: false},
+                    {team: 'JAGB', owner: 'GOWERY_GRANT', projected: 99.86, actual: 11.90, isLive: true},
+                    {team: 'NSNE', owner1: 'NOLTE_JAKE', owner2: 'JOHNSON_PRESTON', isCoOwned: true, projected: 99.48, actual: 0.00, isLive: false},
+                    {team: 'KTPA', owner: 'METTEE_TYLER', projected: 98.74, actual: 8.30, isLive: true},
+                    {team: 'ASNK', owner1: 'HAGEN_ALEX', owner2: 'SCHOESSOW_NICK', isCoOwned: true, projected: 95.57, actual: 0.00, isLive: false},
+                    {team: 'TACT', owner1: 'CUPERY_NICK', owner2: 'SOVIAK_PAT', isCoOwned: true, projected: 94.20, actual: 2.00, isLive: true}
+                ];
+            }
+            
+            async loadLiveData() {
+                console.log('🔄 Starting loadLiveData test...');
+                
+                try {
+                    // Try to fetch from ESPN API first
+                    console.log('📡 Attempting to fetch from /api/live-scores...');
+                    const response = await this.fetchWithTimeout('/api/live-scores', 5000);
+                    
+                    if (response && response.ok) {
+                        this.currentData = await response.json();
+                        console.log('✅ API fetch successful!');
+                    } else {
+                        throw new Error('API response not ok');
+                    }
+                    
+                    this.retryCount = 0; // Reset retry count on success
+                    
+                } catch (error) {
+                    this.debugMode && console.warn('API fetch failed, using fallback data:', error.message);
+                    
+                    // Use fallback data
+                    this.currentData = this.getSimulatedLiveData();
+                    this.retryCount++;
+                    
+                    // Debug: Log fallback data to ensure it's working
+                    this.debugMode && console.log('Fallback data loaded:', this.currentData.length, 'teams');
+                    
+                    // Only show connection issue if we have no data to display
+                    // For now, always use fallback data successfully
+                    if (this.retryCount >= this.maxRetries && this.debugMode) {
+                        console.warn('Max retries reached, but continuing with simulated data');
+                    }
+                } finally {
+                    console.log('🔧 Processing data in finally block...');
+                    this.processLiveData();
+                    console.log('✅ Data loading test complete!');
+                }
+            }
+            
+            processLiveData() {
+                // Debug: Ensure we have data to process
+                this.debugMode && console.log('Processing data:', this.currentData ? this.currentData.length : 'null', 'teams');
+                
+                if (!this.currentData || this.currentData.length === 0) {
+                    console.error('❌ No data to process!');
+                    statusElement.innerHTML = `<span class="text-red-400">❌ ERROR: No data to process</span>`;
+                    return;
+                }
+                
+                // Calculate live median
+                const liveScores = this.currentData
+                    .filter(team => team.isLive && team.actual > 0)
+                    .map(team => team.actual)
+                    .sort((a, b) => b - a);
+                
+                console.log('🎯 Live scores found:', liveScores.length, 'teams with scores:', liveScores);
+                
+                const projectedScores = this.currentData
+                    .map(team => team.projected)
+                    .sort((a, b) => b - a);
+                
+                // Use live median if we have enough live games, otherwise projected
+                let median;
+                if (liveScores.length >= 6) {
+                    const sixth = liveScores[5] || 0;
+                    const seventh = liveScores[6] || 0;
+                    median = (sixth + seventh) / 2;
+                    console.log('📊 Using LIVE median calculation:', median);
+                } else {
+                    const sixth = projectedScores[5] || 0;
+                    const seventh = projectedScores[6] || 0;
+                    median = (sixth + seventh) / 2;
+                    console.log('📊 Using PROJECTED median calculation:', median);
+                }
+                
+                console.log('🎯 Final median:', median);
+                
+                statusElement.innerHTML = `
+                    <div class="text-green-400">✅ SUCCESS: Data processed successfully!</div>
+                    <div class="mt-2 text-sm text-gray-300">
+                        <div>Teams: ${this.currentData.length}</div>
+                        <div>Live games: ${liveScores.length}</div>
+                        <div>Median: ${median.toFixed(2)}</div>
+                        <div>Retry count: ${this.retryCount}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Test button handler
+        document.getElementById('test-btn').addEventListener('click', async () => {
+            addLog('Starting data loading test...');
+            const test = new DataLoadingTest();
+            await test.loadLiveData();
+        });
+        
+        // Clear button handler
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            logElement.innerHTML = 'Log cleared...\n';
+            statusElement.innerHTML = 'Ready to test...';
+        });
+    </script>
+</body>
+</html>
