@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RFFL Visual Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixelmatch/5.2.1/pixelmatch.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        #test-results { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+        .pass { color: green; }
+        .fail { color: red; }
+        iframe { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>RFFL Visual Tests</h1>
+    <div id="test-results"></div>
+    <iframe src="../live-mobile.html" id="rffl-frame" width="375" height="812"></iframe>
+    <script>
+        const testResultsContainer = document.getElementById('test-results');
+        const iframe = document.getElementById('rffl-frame');
+        const tests = [];
+
+        function test(name, fn) {
+            tests.push({ name, fn });
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (actual !== expected) {
+                throw new Error(message || `Expected ${expected} but got ${actual}`);
+            }
+        }
+
+        function assertTrue(value, message) {
+            if (!value) {
+                throw new Error(message || `Expected true but got ${value}`);
+            }
+        }
+
+        async function takeScreenshot(element) {
+            const canvas = await html2canvas(element);
+            return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        async function compareToBaseline(screenshot, baselineName) {
+            return new Promise((resolve, reject) => {
+                const baselineImage = new Image();
+                baselineImage.src = `snapshots/${baselineName}`;
+                baselineImage.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = baselineImage.width;
+                    canvas.height = baselineImage.height;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(baselineImage, 0, 0);
+                    const baselineData = context.getImageData(0, 0, baselineImage.width, baselineImage.height);
+
+                    const diffCanvas = document.createElement('canvas');
+                    diffCanvas.width = screenshot.width;
+                    diffCanvas.height = screenshot.height;
+                    const diffContext = diffCanvas.getContext('2d');
+                    const diff = diffContext.createImageData(screenshot.width, screenshot.height);
+
+                    const numDiffPixels = pixelmatch(screenshot.data, baselineData.data, diff.data, screenshot.width, screenshot.height, { threshold: 0.1 });
+
+                    if (numDiffPixels > 0) {
+                        diffContext.putImageData(diff, 0, 0);
+                        resolve({ match: false, diffCanvas });
+                    } else {
+                        resolve({ match: true });
+                    }
+                };
+                baselineImage.onerror = () => {
+                    // Baseline does not exist
+                    const newBaselineCanvas = document.createElement('canvas');
+                    newBaselineCanvas.width = screenshot.width;
+                    newBaselineCanvas.height = screenshot.height;
+                    const newBaselineContext = newBaselineCanvas.getContext('2d');
+                    newBaselineContext.putImageData(screenshot, 0, 0);
+
+                    const dataUrl = newBaselineCanvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = baselineName;
+                    link.textContent = `Download new baseline: ${baselineName}`;
+
+                    const error = new Error(`Baseline not found for ${baselineName}.`);
+                    error.diffCanvas = document.createElement('div');
+                    error.diffCanvas.appendChild(link);
+                    reject(error);
+                };
+            });
+        }
+
+        async function assertVisually(element, baselineName) {
+            const screenshot = await takeScreenshot(element);
+            const result = await compareToBaseline(screenshot, baselineName);
+            if (!result.match) {
+                const error = new Error(`Visual mismatch for ${baselineName}`);
+                error.diffCanvas = result.diffCanvas;
+                throw error;
+            }
+        }
+            const baselineData = context.getImageData(0, 0, baselineImage.width, baselineImage.height);
+
+            const diffCanvas = document.createElement('canvas');
+            diffCanvas.width = screenshot.width;
+            diffCanvas.height = screenshot.height;
+            const diffContext = diffCanvas.getContext('2d');
+            const diff = diffContext.createImageData(screenshot.width, screenshot.height);
+
+            const numDiffPixels = pixelmatch(screenshot.data, baselineData.data, diff.data, screenshot.width, screenshot.height, { threshold: 0.1 });
+
+            if (numDiffPixels > 0) {
+                diffContext.putImageData(diff, 0, 0);
+                return { match: false, diffCanvas };
+            }
+            return { match: true };
+        }
+
+        async function runTests() {
+            for (const t of tests) {
+                const resultDiv = document.createElement('div');
+                try {
+                    await t.fn();
+                    resultDiv.textContent = `✅ ${t.name}`;
+                    resultDiv.className = 'pass';
+                } catch (e) {
+                    resultDiv.textContent = `❌ ${t.name}: ${e.message}`;
+                    resultDiv.className = 'fail';
+                    if (e.diffCanvas) {
+                        resultDiv.appendChild(e.diffCanvas);
+                    }
+                }
+                testResultsContainer.appendChild(resultDiv);
+            }
+        }
+
+        iframe.onload = () => {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            test('Default view should match baseline', async () => {
+                await assertVisually(iframe.contentWindow.document.body, 'default-view.png');
+            });
+
+            test('Responsiveness across different viewports', async () => {
+                const viewports = [
+                    { width: 320, height: 568, name: 'iphone5' },
+                    { width: 375, height: 667, name: 'iphone678' },
+                    { width: 428, height: 926, name: 'iphone12pro' },
+                    { width: 768, height: 1024, name: 'ipad' },
+                ];
+
+                for (const viewport of viewports) {
+                    iframe.width = viewport.width;
+                    iframe.height = viewport.height;
+                    await new Promise(resolve => setTimeout(resolve, 500)); // allow for render
+                    await assertVisually(iframe.contentWindow.document.body, `responsive-${viewport.name}.png`);
+                }
+            });
+
+            test('Error message should match baseline', async () => {
+                // Note: We are calling an internal app function to trigger the error state.
+                // This is because simulating a network failure from the client-side without a service worker is complex.
+                // A more robust solution would be to use a service worker to intercept network requests,
+                // but that is beyond the scope of this task.
+                iframe.contentWindow.liveApp.showErrorState();
+                await new Promise(resolve => setTimeout(resolve, 500)); // allow for render
+                await assertVisually(iframe.contentWindow.document.body, 'error-message.png');
+            });
+
+            test('Touch interaction should provide visual feedback', async () => {
+                // We will simulate a score update by toggling the auto-refresh button.
+                // This is a more realistic user interaction than calling internal functions.
+                const autoRefreshButton = iframe.contentWindow.document.getElementById('auto-refresh-toggle');
+
+                // Turn off auto-refresh
+                autoRefreshButton.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Manually change the data in the app to simulate a score update on the next refresh
+                const app = iframe.contentWindow.liveApp;
+                app.getSimulatedLiveData = () => {
+                    const data = app.constructor.prototype.getSimulatedLiveData.call(app);
+                    data[0].actual = 100;
+                    return data;
+                };
+
+                // Turn on auto-refresh, which should trigger an immediate refresh
+                autoRefreshButton.click();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // allow for refresh and animation
+
+                await assertVisually(iframe.contentWindow.document.querySelector('.live-score-card'), 'touch-feedback.png');
+            });
+
+            runTests();
+        };
+    </script>
+</body>
+</html>
