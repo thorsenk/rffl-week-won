@@ -38,11 +38,18 @@ jobs:
         # Create site directory
         mkdir -p _site
         
-        # Copy static files (excluding problematic symlinks)
-        cp -r *.html _site/ 2>/dev/null || true
+        # Copy HTML files explicitly
+        cp index.html _site/ 2>/dev/null || true
+        cp live-mobile.html _site/ 2>/dev/null || true
+        cp mobile.html _site/ 2>/dev/null || true
+        cp test.html _site/ 2>/dev/null || true
+        
+        # Copy directories
         cp -r js _site/ 2>/dev/null || true
         cp -r css _site/ 2>/dev/null || true
         cp -r config _site/ 2>/dev/null || true
+        
+        # Copy other files
         cp *.md _site/ 2>/dev/null || true
         cp serve.sh _site/ 2>/dev/null || true
         
