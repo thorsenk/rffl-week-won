@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RFFL Week 1 vs. Median - LIVE</title>
+    <meta name="description" content="Live RFFL Week 1 median scoring - real-time updates">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 50%, #111827 100%);
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Live pulse animation */
+        @keyframes livePulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+                transform: scale(1.02);
+            }
+        }
+
+        .live-indicator {
+            animation: livePulse 2s infinite;
+        }
+
+        /* Median glow */
+        @keyframes medianGlow {
+            0%, 100% { 
+                text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+                transform: scale(1.05);
+            }
+        }
+
+        .median-glow {
+            animation: medianGlow 3s ease-in-out infinite;
+        }
+
+        /* Score card animations */
+        @keyframes scoreUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: rgba(16, 185, 129, 0.2); }
+            100% { transform: scale(1); }
+        }
+
+        .score-update {
+            animation: scoreUpdate 0.5s ease-out;
+        }
+
+        /* Pull to refresh */
+        .pull-refresh {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-60px);
+            transition: transform 0.3s ease;
+        }
+
+        .pull-refresh.active {
+            transform: translateY(0);
+        }
+
+        /* Touch-friendly buttons */
+        .touch-button {
+            min-height: 48px;
+            min-width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Haptic feedback simulation */
+        .haptic-light {
+            transition: all 0.1s ease;
+        }
+
+        .haptic-light:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        /* Status indicators */
+        .status-live { 
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        .status-upcoming { 
+            background: linear-gradient(45deg, #6b7280, #4b5563);
+        }
+        .status-final { 
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+
+        /* Mobile-specific scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 2px;
+        }
+
+        /* Safe area handling for iPhone */
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Team cards */
+        .team-card {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .team-card:active {
+            transform: scale(0.98);
+        }
+
+        .team-card.winning {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(31, 41, 55, 0.8) 50%);
+        }
+
+        .team-card.losing {
+            border-left: 4px solid #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(31, 41, 55, 0.8) 50%);
+        }
+
+        /* Floating action button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+            z-index: 50;
+        }
+
+        /* Median progress bar */
+        .median-progress {
+            height: 8px;
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .median-marker {
+            position: absolute;
+            width: 3px;
+            height: 16px;
+            background: #8b5cf6;
+            border-radius: 1px;
+            top: -4px;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    
+    <!-- Pull to Refresh Indicator -->
+    <div id="pull-refresh" class="pull-refresh">
+        <div class="text-purple-400">
+            <svg class="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3l3-3-3-3v3a12 12 0 100 24 12 12 0 000-24z"></path>
+            </svg>
+            <span class="ml-2 text-sm font-medium">Pull to refresh...</span>
+        </div>
+    </div>
+
+    <!-- Header with safe area -->
+    <div class="safe-area-top sticky top-0 z-40 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50">
+        <div class="px-4 py-4">
+            <!-- Title -->
+            <div class="text-center mb-4">
+                <h1 class="text-2xl font-black text-white mb-1">
+                    RFFL WEEK 1
+                </h1>
+                <div class="text-lg font-bold median-glow bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    vs. MEDIAN
+                </div>
+                <div class="text-xs text-gray-400 mt-1">
+                    Live scoring • Tap to refresh
+                </div>
+            </div>
+
+            <!-- Current Median Display -->
+            <div class="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 rounded-2xl p-4 border border-purple-500/20">
+                <div class="text-center">
+                    <div class="text-sm text-gray-300 mb-1">League Median</div>
+                    <div id="live-median" class="text-3xl font-black median-glow text-white">
+                        101.13
+                    </div>
+                    <div class="text-xs text-gray-400">
+                        6th: <span id="sixth-score">101.91</span> • 7th: <span id="seventh-score">100.36</span>
+                    </div>
+                    
+                    <!-- Median Progress Bar -->
+                    <div class="relative mt-3 median-progress">
+                        <div id="median-marker" class="median-marker" style="left: 50%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>Low: <span id="low-score">94.20</span></span>
+                        <span>High: <span id="high-score">105.33</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="flex justify-center gap-6 mt-4 text-center">
+                <div>
+                    <div id="live-games" class="text-lg font-bold text-red-400">6</div>
+                    <div class="text-xs text-gray-400">Live</div>
+                </div>
+                <div>
+                    <div id="games-remaining" class="text-lg font-bold text-yellow-400">6</div>
+                    <div class="text-xs text-gray-400">Upcoming</div>
+                </div>
+                <div>
+                    <div id="last-update" class="text-xs text-gray-400">Updated: Just now</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Scores Grid -->
+    <div class="px-4 py-4">
+        <h2 class="text-lg font-bold mb-4 text-white">Live Standings</h2>
+        
+        <div id="scores-container" class="space-y-3">
+            <!-- Team cards will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Bottom Safe Area -->
+    <div class="safe-area-bottom h-20"></div>
+
+    <!-- Floating Action Button -->
+    <button id="refresh-fab" class="fab touch-button haptic-light">
+        <svg id="refresh-icon" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // Live data (this would come from your ESPN API)
+        let liveData = [
+            {team: 'MXLB', owner: 'JOHANSEN_TYLER', projected: 105.33, actual: 21.24, isLive: true, rank: 1},
+            {team: 'PCX', owner: 'THORSEN_KYLE', projected: 105.22, actual: 0.00, isLive: false, rank: 2},
+            {team: 'MRYJ', owner: 'ALDEN-ANDERSON', projected: 105.18, actual: 0.00, isLive: false, rank: 3},
+            {team: 'PKMC', owner: 'KASPER_PAT', projected: 104.60, actual: 0.00, isLive: false, rank: 4},
+            {team: 'LNO', owner: 'KNABE_JUSTIN', projected: 103.82, actual: 11.50, isLive: true, rank: 5},
+            {team: 'BRIM', owner: 'FEATHERS_JASON', projected: 101.91, actual: 13.20, isLive: true, rank: 6},
+            {team: 'WZRD', owner: 'OLSON_WES', projected: 100.36, actual: 0.00, isLive: false, rank: 7},
+            {team: 'JAGB', owner: 'GOWERY_GRANT', projected: 99.86, actual: 11.90, isLive: true, rank: 8},
+            {team: 'TNT', owner: 'SWEET_DERRICK', projected: 99.21, actual: 8.60, isLive: true, rank: 9},
+            {team: 'CHLK', owner: 'FEHLHABER_STEVE', projected: 98.75, actual: 0.00, isLive: false, rank: 10},
+            {team: 'GFM', owner: 'TETZLAFF_LANCE', projected: 97.04, actual: 0.00, isLive: false, rank: 11},
+            {team: 'TACT', owner: 'CUPERY_NICK', projected: 94.20, actual: 2.00, isLive: true, rank: 12}
+        ];
+
+        const median = 101.13;
+        let touchStartY = 0;
+        let refreshing = false;
+
+        // Initialize the mobile UI
+        function initMobileUI() {
+            renderScoreCards();
+            setupTouchHandlers();
+            startAutoRefresh();
+            updateStats();
+        }
+
+        // Render team score cards
+        function renderScoreCards() {
+            const container = document.getElementById('scores-container');
+            container.innerHTML = '';
+
+            // Sort by current score (live games first, then by actual score)
+            const sortedData = [...liveData].sort((a, b) => {
+                if (a.isLive && !b.isLive) return -1;
+                if (!a.isLive && b.isLive) return 1;
+                if (a.isLive && b.isLive) return b.actual - a.actual;
+                return b.projected - a.projected;
+            });
+
+            sortedData.forEach((team, index) => {
+                const card = createTeamCard(team, index + 1);
+                container.appendChild(card);
+            });
+        }
+
+        // Create individual team card
+        function createTeamCard(team, rank) {
+            const div = document.createElement('div');
+            const currentScore = team.isLive ? team.actual : team.projected;
+            const vsMedian = currentScore - median;
+            const isWinning = vsMedian > 0;
+            
+            const statusClass = team.isLive ? 'status-live' : 'status-upcoming';
+            const cardClass = isWinning ? 'winning' : 'losing';
+            const liveIndicator = team.isLive ? 'live-indicator' : '';
+
+            div.className = `team-card ${cardClass} ${liveIndicator} rounded-xl p-4 haptic-light`;
+            
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <!-- Left side: Rank and Team -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 ${statusClass} rounded-full flex items-center justify-center text-xs font-bold text-white">
+                            ${rank}
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-lg">${team.team}</div>
+                            <div class="text-xs text-gray-400 truncate w-32">${team.owner}</div>
+                        </div>
+                    </div>
+
+                    <!-- Center: Score -->
+                    <div class="text-center">
+                        <div class="text-2xl font-black text-white" id="score-${team.team}">
+                            ${currentScore.toFixed(1)}
+                        </div>
+                        ${team.isLive ? `
+                            <div class="text-xs text-gray-400">
+                                Proj: ${team.projected.toFixed(1)}
+                            </div>
+                        ` : `
+                            <div class="text-xs text-yellow-400">Pre-Game</div>
+                        `}
+                    </div>
+
+                    <!-- Right side: vs Median -->
+                    <div class="text-right">
+                        <div class="text-lg font-bold ${isWinning ? 'text-green-400' : 'text-red-400'}">
+                            ${vsMedian >= 0 ? '+' : ''}${vsMedian.toFixed(1)}
+                        </div>
+                        <div class="text-xs ${isWinning ? 'text-green-300' : 'text-red-300'}">
+                            vs Median
+                        </div>
+                        <div class="mt-1">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${isWinning ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'}">
+                                ${isWinning ? 'WIN' : 'LOSS'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live indicator bar -->
+                ${team.isLive ? `
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                            <span>🔴 LIVE</span>
+                            <span>Progress: ${((currentScore / team.projected) * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-red-400 to-red-600 h-2 rounded-full transition-all duration-300" 
+                                 style="width: ${Math.min(100, (currentScore / team.projected) * 100)}%"></div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            // Add touch handler
+            div.addEventListener('click', () => {
+                // Haptic feedback simulation
+                div.classList.add('haptic-light');
+                setTimeout(() => div.classList.remove('haptic-light'), 100);
+                
+                // Could open detailed view here
+                showTeamDetails(team);
+            });
+
+            return div;
+        }
+
+        // Update statistics
+        function updateStats() {
+            const liveCount = liveData.filter(t => t.isLive).length;
+            const upcomingCount = liveData.length - liveCount;
+            
+            document.getElementById('live-games').textContent = liveCount;
+            document.getElementById('games-remaining').textContent = upcomingCount;
+            document.getElementById('last-update').textContent = `Updated: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+
+        // Setup touch handlers
+        function setupTouchHandlers() {
+            let startY;
+            let startTime;
+            
+            // Pull to refresh
+            document.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                startTime = Date.now();
+            }, {passive: true});
+
+            document.addEventListener('touchmove', (e) => {
+                if (window.scrollY === 0 && !refreshing) {
+                    const currentY = e.touches[0].clientY;
+                    const diff = currentY - startY;
+                    
+                    if (diff > 50) {
+                        document.getElementById('pull-refresh').classList.add('active');
+                    }
+                }
+            }, {passive: true});
+
+            document.addEventListener('touchend', (e) => {
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                const pullRefresh = document.getElementById('pull-refresh');
+                
+                if (pullRefresh.classList.contains('active') && duration > 200) {
+                    refreshData();
+                }
+                
+                pullRefresh.classList.remove('active');
+            }, {passive: true});
+
+            // FAB refresh button
+            document.getElementById('refresh-fab').addEventListener('click', refreshData);
+        }
+
+        // Refresh data
+        async function refreshData() {
+            if (refreshing) return;
+            
+            refreshing = true;
+            const refreshIcon = document.getElementById('refresh-icon');
+            refreshIcon.classList.add('animate-spin');
+            
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // In real app, fetch new data from ESPN API
+            // For demo, simulate some score updates
+            simulateScoreUpdates();
+            
+            renderScoreCards();
+            updateStats();
+            
+            refreshIcon.classList.remove('animate-spin');
+            refreshing = false;
+            
+            // Show success feedback
+            showRefreshSuccess();
+        }
+
+        // Simulate live score updates
+        function simulateScoreUpdates() {
+            liveData.forEach(team => {
+                if (team.isLive && Math.random() > 0.7) {
+                    // Random small score increase
+                    team.actual += Math.random() * 3;
+                    
+                    // Animate score update
+                    setTimeout(() => {
+                        const scoreEl = document.getElementById(`score-${team.team}`);
+                        if (scoreEl) {
+                            scoreEl.classList.add('score-update');
+                            setTimeout(() => scoreEl.classList.remove('score-update'), 500);
+                        }
+                    }, 100);
+                }
+            });
+        }
+
+        // Show refresh success
+        function showRefreshSuccess() {
+            const fab = document.getElementById('refresh-fab');
+            fab.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            setTimeout(() => {
+                fab.style.background = 'linear-gradient(135deg, #8b5cf6, #06b6d4)';
+            }, 1000);
+        }
+
+        // Show team details (placeholder)
+        function showTeamDetails(team) {
+            // Could implement a modal or slide-up panel here
+            console.log('Show details for:', team.team);
+        }
+
+        // Auto refresh every 30 seconds
+        function startAutoRefresh() {
+            setInterval(() => {
+                if (!refreshing && document.visibilityState === 'visible') {
+                    simulateScoreUpdates();
+                    renderScoreCards();
+                    updateStats();
+                }
+            }, 30000);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initMobileUI);
+
+        // Handle visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshData();
+            }
+        });
+    </script>
+</body>
+</html>

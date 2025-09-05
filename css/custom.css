@@ -1,0 +1,240 @@
+/* RFFL Week 1 Median Webapp - Custom Styles */
+
+/* Enhanced animations for better UX */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Median-specific styling enhancements */
+.median-highlight {
+    background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: medianShimmer 3s ease-in-out infinite;
+}
+
+@keyframes medianShimmer {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Enhanced team box hover effects */
+.median-matchup-box {
+    position: relative;
+    overflow: hidden;
+}
+
+.median-matchup-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.median-matchup-box:hover::before {
+    left: 100%;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-indicator.win {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-indicator.loss {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-indicator.tie {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Chart container styling */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.chart-container canvas {
+    border-radius: 8px;
+}
+
+/* Loading states */
+.loading-shimmer {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .median-matchup-box {
+        padding: 12px;
+    }
+    
+    .standings-row td {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .median-matchup-box.above-median {
+        border-left-color: #00ff00;
+        border-left-width: 6px;
+    }
+    
+    .median-matchup-box.below-median {
+        border-left-color: #ff0000;
+        border-left-width: 6px;
+    }
+    
+    .median-matchup-box.at-median {
+        border-left-color: #ffff00;
+        border-left-width: 6px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .median-indicator,
+    .median-matchup-box::before,
+    .loading-shimmer {
+        animation: none;
+    }
+    
+    .median-matchup-box {
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .median-matchup-box,
+    #detailed-team-view,
+    .chart-container {
+        break-inside: avoid;
+    }
+    
+    .median-matchup-box {
+        border: 2px solid #000;
+        margin-bottom: 10px;
+    }
+    
+    /* Hide interactive elements when printing */
+    button,
+    .gemini-button {
+        display: none;
+    }
+}
+
+/* Focus states for accessibility */
+.median-matchup-box:focus,
+.gemini-button:focus,
+button:focus {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #6b7280;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Utility classes for common patterns */
+.gradient-text {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}

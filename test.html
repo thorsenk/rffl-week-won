@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFFL Week 1 Median - System Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .pending { color: #f59e0b; }
+        pre { background: #2d2d2d; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🏈 RFFL Week 1 Median System Test</h1>
+    
+    <div class="test-section">
+        <h2>JavaScript Module Loading</h2>
+        <div id="module-status">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Median Calculator Test</h2>
+        <div id="median-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>ESPN API Integration Test</h2>
+        <div id="espn-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>RFFL Data Integration Test</h2>
+        <div id="rffl-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Sample Median Calculation</h2>
+        <div id="calculation-demo">Testing...</div>
+    </div>
+
+    <script src="js/median-calculator.js"></script>
+    <script src="js/rffl-data.js"></script>
+    <script src="js/espn-api.js"></script>
+    
+    <script>
+        // Test suite
+        async function runTests() {
+            // Test 1: Module Loading
+            testModuleLoading();
+            
+            // Test 2: Median Calculator
+            await testMedianCalculator();
+            
+            // Test 3: ESPN API
+            await testESPNAPI();
+            
+            // Test 4: RFFL Data
+            await testRFFLData();
+            
+            // Test 5: Full Calculation Demo
+            await testFullCalculation();
+        }
+        
+        function testModuleLoading() {
+            const status = document.getElementById('module-status');
+            let results = [];
+            
+            if (typeof window.medianCalculator !== 'undefined') {
+                results.push('<span class="success">✓ Median Calculator loaded</span>');
+            } else {
+                results.push('<span class="error">✗ Median Calculator failed to load</span>');
+            }
+            
+            if (typeof window.espnAPI !== 'undefined') {
+                results.push('<span class="success">✓ ESPN API loaded</span>');
+            } else {
+                results.push('<span class="error">✗ ESPN API failed to load</span>');
+            }
+            
+            if (typeof window.rfflData !== 'undefined') {
+                results.push('<span class="success">✓ RFFL Data loaded</span>');
+            } else {
+                results.push('<span class="error">✗ RFFL Data failed to load</span>');
+            }
+            
+            status.innerHTML = results.join('<br>');
+        }
+        
+        async function testMedianCalculator() {
+            const status = document.getElementById('median-test');
+            
+            try {
+                // Test data - 12 teams as required
+                const testData = [
+                    {team: 'T1', score: 120.5}, {team: 'T2', score: 115.2}, {team: 'T3', score: 110.0},
+                    {team: 'T4', score: 105.8}, {team: 'T5', score: 100.0}, {team: 'T6', score: 95.5},
+                    {team: 'T7', score: 90.0}, {team: 'T8', score: 85.3}, {team: 'T9', score: 80.0},
+                    {team: 'T10', score: 75.5}, {team: 'T11', score: 70.0}, {team: 'T12', score: 65.2}
+                ];
+                
+                const results = window.medianCalculator.calculateMedian(testData);
+                
+                let output = [];
+                output.push('<span class="success">✓ Median calculation successful</span>');
+                output.push(`Median: ${results.median} (6th: ${results.sixthPlaceScore}, 7th: ${results.seventhPlaceScore})`);
+                output.push(`Winners: ${results.stats.wins}, Losers: ${results.stats.losses}, Ties: ${results.stats.ties}`);
+                
+                status.innerHTML = output.join('<br>');
+            } catch (error) {
+                status.innerHTML = `<span class="error">✗ Median calculator error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testESPNAPI() {
+            const status = document.getElementById('espn-test');
+            
+            try {
+                const sampleData = await window.espnAPI.fetchSampleData();
+                status.innerHTML = `<span class="success">✓ ESPN API test data loaded (${sampleData.length} teams)</span>`;
+            } catch (error) {
+                status.innerHTML = `<span class="error">✗ ESPN API error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testRFFLData() {
+            const status = document.getElementById('rffl-test');
+            
+            try {
+                // Test team code resolution
+                const testCode = window.rfflData.resolveCanonicalTeamCode('TEST_TEAM', 2025);
+                const teamInfo = window.rfflData.getCanonicalTeamInfo('WZRD', 2025);
+                
+                let output = [];
+                output.push('<span class="success">✓ RFFL data integration working</span>');
+                output.push(`Team resolution test: TEST_TEAM → ${testCode}`);
+                output.push(`Sample team info: ${JSON.stringify(teamInfo, null, 2)}`);
+                
+                status.innerHTML = output.join('<br>') + '<pre>' + output[2] + '</pre>';
+            } catch (error) {
+                status.innerHTML = `<span class="error">✗ RFFL data error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testFullCalculation() {
+            const status = document.getElementById('calculation-demo');
+            
+            try {
+                // Get sample ESPN data
+                const espnData = await window.espnAPI.fetchSampleData();
+                
+                // Enrich with RFFL data
+                const enrichedData = window.rfflData.enrichTeamData(espnData);
+                
+                // Calculate median
+                const results = window.medianCalculator.calculateMedian(enrichedData);
+                
+                // Format for display
+                const formatted = window.medianCalculator.formatResults(results);
+                
+                let output = [];
+                output.push('<span class="success">✓ Full system integration test successful</span>');
+                output.push(`<strong>Median:</strong> ${formatted.summary.median}`);
+                output.push(`<strong>Results:</strong> ${formatted.summary.wins}W - ${formatted.summary.losses}L - ${formatted.summary.ties}T`);
+                output.push(`<strong>Score Range:</strong> ${formatted.summary.highScore} - ${formatted.summary.lowScore}`);
+                output.push('<strong>Top 3 Teams:</strong>');
+                
+                formatted.standings.slice(0, 3).forEach((team, idx) => {
+                    output.push(`${idx + 1}. ${team.team}: ${team.score} (${team.marginVsMedian >= 0 ? '+' : ''}${team.marginVsMedian}) - ${team.result}`);
+                });
+                
+                status.innerHTML = output.join('<br>');
+                
+            } catch (error) {
+                status.innerHTML = `<span class="error">✗ Full calculation error: ${error.message}</span>`;
+            }
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

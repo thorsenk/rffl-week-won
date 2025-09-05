@@ -1,0 +1,397 @@
+/* RFFL Week 1 Median - Mobile-Optimized Styles */
+
+/* Enhanced mobile-first design system */
+:root {
+    --purple-gradient: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    --win-color: #10b981;
+    --loss-color: #ef4444;
+    --live-color: #dc2626;
+    --upcoming-color: #6b7280;
+    --median-color: #8b5cf6;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Advanced animations */
+@keyframes medianPulse {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    }
+    25% {
+        transform: scale(1.02);
+        text-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+    }
+    75% {
+        transform: scale(1.01);
+        text-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+    }
+}
+
+@keyframes liveIndicator {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+    50% {
+        opacity: 0.7;
+        box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+    }
+}
+
+@keyframes scoreIncrease {
+    0% { 
+        transform: scale(1) rotate(0deg); 
+        color: inherit;
+    }
+    25% { 
+        transform: scale(1.15) rotate(2deg); 
+        color: var(--win-color);
+    }
+    50% { 
+        transform: scale(1.1) rotate(-1deg); 
+        color: var(--win-color);
+    }
+    100% { 
+        transform: scale(1) rotate(0deg); 
+        color: inherit;
+    }
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes progressFill {
+    from {
+        width: 0%;
+    }
+    to {
+        width: var(--progress-width);
+    }
+}
+
+/* Mobile-specific elements */
+.mobile-header {
+    background: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.8) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.median-display {
+    background: linear-gradient(135deg, 
+        rgba(139, 92, 246, 0.1) 0%, 
+        rgba(6, 182, 212, 0.1) 50%, 
+        rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 
+        0 4px 20px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.live-score-card {
+    background: linear-gradient(135deg, 
+        rgba(31, 41, 55, 0.9) 0%, 
+        rgba(17, 24, 39, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-lg);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: cardSlideIn 0.6s ease-out;
+}
+
+.live-score-card:active {
+    transform: scale(0.98) translateY(1px);
+    box-shadow: var(--shadow-md);
+}
+
+.live-score-card.winning {
+    border-left: 4px solid var(--win-color);
+    box-shadow: 
+        var(--shadow-lg),
+        -4px 0 10px rgba(16, 185, 129, 0.1);
+}
+
+.live-score-card.losing {
+    border-left: 4px solid var(--loss-color);
+    box-shadow: 
+        var(--shadow-lg),
+        -4px 0 10px rgba(239, 68, 68, 0.1);
+}
+
+/* Live indicators */
+.live-badge {
+    animation: liveIndicator 2s infinite;
+    background: linear-gradient(45deg, var(--live-color), #b91c1c);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.upcoming-badge {
+    background: linear-gradient(45deg, var(--upcoming-color), #4b5563);
+}
+
+/* Score animations */
+.score-animate {
+    animation: scoreIncrease 0.6s ease-out;
+}
+
+.median-animate {
+    animation: medianPulse 3s ease-in-out infinite;
+}
+
+/* Progress bars */
+.score-progress {
+    background: linear-gradient(90deg, 
+        rgba(239, 68, 68, 0.2) 0%,
+        rgba(245, 158, 11, 0.2) 50%,
+        rgba(16, 185, 129, 0.2) 100%);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.score-progress::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--live-color),
+        #f59e0b,
+        var(--win-color));
+    border-radius: 10px;
+    animation: progressFill 0.8s ease-out;
+    width: var(--progress-width, 0%);
+}
+
+/* Median tracker */
+.median-tracker {
+    position: relative;
+    height: 12px;
+    background: linear-gradient(90deg,
+        rgba(239, 68, 68, 0.3) 0%,
+        rgba(245, 158, 11, 0.3) 50%,
+        rgba(16, 185, 129, 0.3) 100%);
+    border-radius: 6px;
+    overflow: visible;
+}
+
+.median-line {
+    position: absolute;
+    top: -2px;
+    width: 4px;
+    height: 16px;
+    background: var(--median-color);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 
+        0 0 10px rgba(139, 92, 246, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.median-line::after {
+    content: 'MEDIAN';
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--median-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Status indicators */
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-chip.win {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--win-color);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-chip.loss {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--loss-color);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Pull to refresh */
+.pull-refresh-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: var(--median-color);
+    font-weight: 600;
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.pull-refresh-indicator.visible {
+    transform: translateY(0);
+}
+
+/* Floating elements */
+.floating-median {
+    position: fixed;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    background: var(--purple-gradient);
+    color: white;
+    padding: 12px 6px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow-glow);
+    z-index: 30;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.floating-median:hover {
+    opacity: 1;
+}
+
+/* Haptic feedback styles */
+.haptic-feedback {
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.haptic-feedback:active {
+    transform: scale(0.96) translateY(1px);
+    opacity: 0.8;
+}
+
+.haptic-feedback.light:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.haptic-feedback.strong:active {
+    transform: scale(0.94) translateY(2px);
+    opacity: 0.7;
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+    .live-score-card {
+        background: linear-gradient(135deg, 
+            rgba(31, 41, 55, 0.95) 0%, 
+            rgba(17, 24, 39, 0.95) 100%);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .median-display {
+        background: linear-gradient(135deg, 
+            rgba(139, 92, 246, 0.15) 0%, 
+            rgba(6, 182, 212, 0.15) 50%, 
+            rgba(139, 92, 246, 0.15) 100%);
+        border-color: rgba(139, 92, 246, 0.25);
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .live-score-card.winning {
+        border-left-width: 6px;
+        border-left-color: #00ff00;
+    }
+    
+    .live-score-card.losing {
+        border-left-width: 6px;
+        border-left-color: #ff0000;
+    }
+    
+    .median-line {
+        background: #ff00ff;
+        width: 6px;
+    }
+    
+    .status-chip.win {
+        background: #00ff00;
+        color: #000000;
+    }
+    
+    .status-chip.loss {
+        background: #ff0000;
+        color: #ffffff;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .median-animate,
+    .live-badge,
+    .score-animate,
+    .progress-fill,
+    .card-slide-in {
+        animation: none;
+    }
+    
+    .live-score-card,
+    .haptic-feedback,
+    .pull-refresh-indicator {
+        transition: none;
+    }
+    
+    .live-score-card:active {
+        transform: none;
+    }
+}
+
+/* iPhone notch and dynamic island support */
+@supports (padding: max(0px)) {
+    .mobile-header {
+        padding-top: max(16px, env(safe-area-inset-top));
+    }
+    
+    .bottom-safe-area {
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) and (max-height: 500px) {
+    .median-display {
+        padding: 12px;
+    }
+    
+    .live-score-card {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .mobile-header {
+        padding: 8px 16px;
+    }
+}

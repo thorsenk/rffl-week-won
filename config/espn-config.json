@@ -1,0 +1,24 @@
+{
+  "leagueId": 323196,
+  "year": 2025,
+  "espnS2": "",
+  "swid": "",
+  "refreshInterval": 300000,
+  "cacheTimeout": 300000,
+  "apiEndpoints": {
+    "boxscores": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/segments/0/leagues/{leagueId}/boxscore",
+    "teams": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{year}/leagues/{leagueId}/teams"
+  },
+  "week1Settings": {
+    "isMedianFormat": true,
+    "medianCalculation": "average_6th_7th",
+    "isDivisionNeutral": true,
+    "excludeFromH2HTiebreakers": true,
+    "tieProbability": 0.0051
+  },
+  "geminiApi": {
+    "apiKey": "",
+    "model": "gemini-2.0-flash-exp",
+    "maxTokens": 500
+  }
+}
