@@ -12,7 +12,78 @@ class MobileUIController {
         this.hapticEnabled = this.checkHapticSupport();
         this.lastScoreUpdate = new Map();
         
+        // Performance monitoring
+        this.performanceMetrics = {
+            animationFrames: 0,
+            lastFPSCheck: performance.now(),
+            fps: 0,
+            slowFrames: 0
+        };
+        
+        // Animation optimizations
+        this.animationQueue = [];
+        this.isProcessingAnimations = false;
+        
+        // Intersection observer for performance
+        this.setupIntersectionObserver();
+        
         this.init();
+    }
+    
+    // Performance monitoring setup
+    setupIntersectionObserver() {
+        if ('IntersectionObserver' in window) {
+            this.cardObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const card = entry.target;
+                    if (entry.isIntersecting) {
+                        card.classList.add('in-viewport');
+                        // Enable animations for visible cards
+                        card.style.willChange = 'transform, opacity';
+                    } else {
+                        card.classList.remove('in-viewport');
+                        // Disable expensive properties for offscreen cards
+                        card.style.willChange = 'auto';
+                    }
+                });
+            }, {
+                rootMargin: '50px',
+                threshold: 0.1
+            });
+        }
+    }
+    
+    // Monitor performance and adapt
+    monitorPerformance() {
+        const now = performance.now();
+        this.performanceMetrics.animationFrames++;
+        
+        if (now - this.performanceMetrics.lastFPSCheck > 1000) {
+            this.performanceMetrics.fps = this.performanceMetrics.animationFrames;
+            this.performanceMetrics.animationFrames = 0;
+            this.performanceMetrics.lastFPSCheck = now;
+            
+            // Adapt based on performance
+            this.adaptToPerformance();
+        }
+        
+        requestAnimationFrame(() => this.monitorPerformance());
+    }
+    
+    // Adapt animations based on performance
+    adaptToPerformance() {
+        const fps = this.performanceMetrics.fps;
+        const body = document.body;
+        
+        if (fps < 30) {
+            // Low performance - reduce animations
+            body.classList.add('reduce-animations');
+            this.performanceMetrics.slowFrames++;
+        } else if (fps > 50 && this.performanceMetrics.slowFrames > 0) {
+            // Good performance - restore animations
+            body.classList.remove('reduce-animations');
+            this.performanceMetrics.slowFrames = Math.max(0, this.performanceMetrics.slowFrames - 1);
+        }
     }
 
     init() {
@@ -340,22 +411,58 @@ class MobileUIController {
         });
     }
 
-    // Score animations
+    // Enhanced Score Animations with Performance Optimizations
     animateScoreUpdate(teamCode, newScore, oldScore) {
         const scoreElement = document.querySelector(`[data-team="${teamCode}"] .score-value`);
         if (scoreElement) {
-            // Determine animation based on score change
-            if (newScore > oldScore) {
-                scoreElement.classList.add('score-animate');
-                this.triggerHaptic('light');
+            // Use RAF for smooth animations
+            this.scheduleAnimation(() => {
+                // Determine animation based on score change
+                if (newScore > oldScore) {
+                    scoreElement.classList.add('score-animate');
+                    this.triggerHaptic('light');
+                    
+                    // Remove class after animation completes
+                    scoreElement.addEventListener('animationend', () => {
+                        scoreElement.classList.remove('score-animate');
+                    }, { once: true });
+                }
                 
-                setTimeout(() => {
-                    scoreElement.classList.remove('score-animate');
-                }, 600);
-            }
+                // Update the displayed score with smooth animation
+                this.animateNumberChange(scoreElement, oldScore, newScore);
+                
+                // Update progress bar if exists
+                this.updateScoreProgress(teamCode, newScore, oldScore);
+            });
+        }
+    }
+    
+    // Performance-optimized animation scheduler
+    scheduleAnimation(callback) {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                requestAnimationFrame(callback);
+            });
+        } else {
+            requestAnimationFrame(callback);
+        }
+    }
+    
+    // Enhanced progress bar animation
+    updateScoreProgress(teamCode, newScore, oldScore) {
+        const progressBar = document.querySelector(`[data-team="${teamCode}"] .score-progress-fill`);
+        if (progressBar) {
+            const targetPercent = Math.min(100, Math.max(0, (newScore / 150) * 100));
             
-            // Update the displayed score with animation
-            this.animateNumberChange(scoreElement, oldScore, newScore);
+            // Smooth transition using Web Animations API
+            progressBar.animate([
+                { width: `${(oldScore / 150) * 100}%` },
+                { width: `${targetPercent}%` }
+            ], {
+                duration: 800,
+                easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+                fill: 'forwards'
+            });
         }
     }
 

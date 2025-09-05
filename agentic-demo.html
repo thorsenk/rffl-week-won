@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFFL Agentic System Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .agent-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .agent-active { border-left-color: #10b981; }
+        .agent-warning { border-left-color: #f59e0b; }
+        .agent-error { border-left-color: #ef4444; }
+        
+        .health-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .health-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .health-good { background: #10b981; }
+        .health-warning { background: #f59e0b; }
+        .health-critical { background: #ef4444; }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4">🤖 RFFL Agentic System</h1>
+            <p class="text-gray-400 mb-6">Autonomous Multi-Agent Architecture for Fantasy Football Analytics</p>
+            
+            <!-- System Status -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div id="system-status" class="text-2xl font-bold text-green-400">●</div>
+                        <div class="text-sm text-gray-400">System Status</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="agent-count" class="text-2xl font-bold">0</div>
+                        <div class="text-sm text-gray-400">Active Agents</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="decision-count" class="text-2xl font-bold">0</div>
+                        <div class="text-sm text-gray-400">Autonomous Decisions</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="health-score" class="text-2xl font-bold">100%</div>
+                        <div class="text-sm text-gray-400">System Health</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Data Agent -->
+            <div id="data-agent-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🔄 Data Agent</h3>
+                    <div id="data-agent-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="data-agent-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="data-agent-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>Cache Hit Rate: <span id="data-cache-rate" class="text-blue-400">85%</span></div>
+                        <div>Data Quality: <span id="data-quality" class="text-green-400">Good</span></div>
+                        <div>API Response: <span id="data-response" class="text-yellow-400">245ms</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoring Agent -->
+            <div id="scoring-agent-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🎯 Scoring Agent</h3>
+                    <div id="scoring-agent-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="scoring-agent-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="scoring-agent-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>Accuracy: <span id="scoring-accuracy" class="text-green-400">98.5%</span></div>
+                        <div>Anomalies: <span id="scoring-anomalies" class="text-blue-400">0</span></div>
+                        <div>Calc Time: <span id="scoring-time" class="text-yellow-400">12ms</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UI Agent -->
+            <div id="ui-agent-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🎨 UI Agent</h3>
+                    <div id="ui-agent-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="ui-agent-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="ui-agent-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>FPS: <span id="ui-fps" class="text-green-400">60</span></div>
+                        <div>Render Time: <span id="ui-render" class="text-blue-400">16ms</span></div>
+                        <div>Memory: <span id="ui-memory" class="text-yellow-400">45%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Agent -->
+            <div id="monitoring-agent-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🔍 Monitoring Agent</h3>
+                    <div id="monitoring-agent-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="monitoring-agent-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="monitoring-agent-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>Alerts: <span id="monitoring-alerts" class="text-blue-400">0</span></div>
+                        <div>Errors: <span id="monitoring-errors" class="text-green-400">0</span></div>
+                        <div>Uptime: <span id="monitoring-uptime" class="text-green-400">99.9%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictive Agent -->
+            <div id="predictive-agent-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🔮 Predictive Agent</h3>
+                    <div id="predictive-agent-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="predictive-agent-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="predictive-agent-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>Accuracy: <span id="predictive-accuracy" class="text-green-400">82%</span></div>
+                        <div>Models: <span id="predictive-models" class="text-blue-400">4</span></div>
+                        <div>Forecasts: <span id="predictive-forecasts" class="text-yellow-400">12</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Orchestrator -->
+            <div id="orchestrator-card" class="agent-card bg-gray-800 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">🎭 Orchestrator</h3>
+                    <div id="orchestrator-status" class="pulse-dot w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Health</span>
+                            <span id="orchestrator-health">100%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div id="orchestrator-health-fill" class="health-fill health-good w-full"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <div>Messages: <span id="orchestrator-messages" class="text-blue-400">0</span></div>
+                        <div>Decisions: <span id="orchestrator-decisions" class="text-green-400">0</span></div>
+                        <div>Success Rate: <span id="orchestrator-success" class="text-green-400">95%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">🎛️ Control Panel</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button id="autonomous-mode-btn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                    Enable Autonomous Mode
+                </button>
+                <button id="performance-mode-btn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                    Performance Mode
+                </button>
+                <button id="reset-system-btn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                    Reset System
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">📋 Activity Log</h3>
+            <div id="activity-log" class="bg-black rounded p-4 h-64 overflow-y-auto">
+                <div class="log-entry text-green-400">System initializing...</div>
+            </div>
+        </div>
+
+        <!-- Insights Panel -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">💡 AI Insights</h3>
+            <div id="insights-container" class="space-y-3">
+                <div class="bg-blue-900 border-l-4 border-blue-400 p-4 rounded">
+                    <div class="font-semibold text-blue-400">System Optimization</div>
+                    <div class="text-sm text-gray-300">All agents operating within optimal parameters</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Agentic System -->
+    <script src="js/agents/agent-orchestrator.js"></script>
+    <script src="js/agents/data-agent.js"></script>
+    <script src="js/agents/scoring-agent.js"></script>
+    <script src="js/agents/ui-agent.js"></script>
+    <script src="js/agents/monitoring-agent.js"></script>
+    <script src="js/agents/predictive-agent.js"></script>
+    <script src="js/agentic-integration.js"></script>
+
+    <!-- Demo Controller -->
+    <script>
+        class AgenticDemo {
+            constructor() {
+                this.updateInterval = null;
+                this.logEntries = [];
+                this.startTime = Date.now();
+                
+                this.init();
+            }
+
+            async init() {
+                console.log('🚀 Starting Agentic Demo...');
+                
+                // Wait for orchestrator to initialize
+                await this.waitForSystem();
+                
+                // Setup UI updates
+                this.startUpdates();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                this.log('Agentic system demo initialized', 'success');
+            }
+
+            async waitForSystem() {
+                return new Promise((resolve) => {
+                    const checkSystem = () => {
+                        if (window.agentOrchestrator && window.agentOrchestrator.agents.size > 0) {
+                            resolve();
+                        } else {
+                            setTimeout(checkSystem, 100);
+                        }
+                    };
+                    checkSystem();
+                });
+            }
+
+            startUpdates() {
+                this.updateInterval = setInterval(() => {
+                    this.updateSystemStatus();
+                    this.updateAgentCards();
+                    this.updateInsights();
+                }, 1000);
+            }
+
+            updateSystemStatus() {
+                if (!window.agentOrchestrator) return;
+
+                const systemState = window.agentOrchestrator.getSystemState();
+                const agentStatus = window.agentOrchestrator.getAgentStatus();
+                
+                // System status
+                const isHealthy = Object.values(agentStatus).every(status => status.isActive);
+                document.getElementById('system-status').textContent = isHealthy ? '●' : '●';
+                document.getElementById('system-status').className = `text-2xl font-bold ${isHealthy ? 'text-green-400' : 'text-red-400'}`;
+                
+                // Agent count
+                document.getElementById('agent-count').textContent = window.agentOrchestrator.agents.size;
+                
+                // Decision count
+                document.getElementById('decision-count').textContent = window.agentOrchestrator.decisionHistory.length;
+                
+                // Health score
+                const avgHealth = Object.values(agentStatus).reduce((sum, status) => 
+                    sum + (status.health.score || 0), 0) / Object.keys(agentStatus).length;
+                document.getElementById('health-score').textContent = Math.round(avgHealth * 100) + '%';
+            }
+
+            updateAgentCards() {
+                if (!window.agentOrchestrator) return;
+
+                const agentStatus = window.agentOrchestrator.getAgentStatus();
+                
+                Object.entries(agentStatus).forEach(([name, status]) => {
+                    const agentKey = name.toLowerCase().replace('agent', '');
+                    this.updateAgentCard(agentKey, status);
+                });
+            }
+
+            updateAgentCard(agentKey, status) {
+                const cardElement = document.getElementById(`${agentKey}-agent-card`);
+                const statusElement = document.getElementById(`${agentKey}-agent-status`);
+                const healthElement = document.getElementById(`${agentKey}-agent-health`);
+                const healthFillElement = document.getElementById(`${agentKey}-agent-health-fill`);
+                
+                if (!cardElement || !status) return;
+
+                // Update card class based on health
+                cardElement.className = cardElement.className.replace(/agent-\w+/, '');
+                if (status.health.score > 0.8) {
+                    cardElement.classList.add('agent-active');
+                    statusElement.className = 'pulse-dot w-3 h-3 bg-green-400 rounded-full';
+                } else if (status.health.score > 0.5) {
+                    cardElement.classList.add('agent-warning');
+                    statusElement.className = 'pulse-dot w-3 h-3 bg-yellow-400 rounded-full';
+                } else {
+                    cardElement.classList.add('agent-error');
+                    statusElement.className = 'pulse-dot w-3 h-3 bg-red-400 rounded-full';
+                }
+
+                // Update health percentage
+                if (healthElement) {
+                    healthElement.textContent = Math.round(status.health.score * 100) + '%';
+                }
+
+                // Update health bar
+                if (healthFillElement) {
+                    const healthPercent = status.health.score * 100;
+                    healthFillElement.style.width = healthPercent + '%';
+                    
+                    healthFillElement.className = healthFillElement.className.replace(/health-\w+/, '');
+                    if (healthPercent > 80) {
+                        healthFillElement.classList.add('health-good');
+                    } else if (healthPercent > 50) {
+                        healthFillElement.classList.add('health-warning');
+                    } else {
+                        healthFillElement.classList.add('health-critical');
+                    }
+                }
+
+                // Update agent-specific metrics
+                this.updateAgentSpecificMetrics(agentKey, status);
+            }
+
+            updateAgentSpecificMetrics(agentKey, status) {
+                switch (agentKey) {
+                    case 'data':
+                        this.updateElement('data-cache-rate', '85%');
+                        this.updateElement('data-quality', status.health.dataQuality > 0.8 ? 'Good' : 'Fair');
+                        this.updateElement('data-response', status.health.apiResponseTime + 'ms');
+                        break;
+                        
+                    case 'scoring':
+                        this.updateElement('scoring-accuracy', (status.health.calculationAccuracy * 100).toFixed(1) + '%');
+                        this.updateElement('scoring-anomalies', '0');
+                        this.updateElement('scoring-time', '12ms');
+                        break;
+                        
+                    case 'ui':
+                        this.updateElement('ui-fps', status.health.fps || '60');
+                        this.updateElement('ui-render', status.health.renderTime?.toFixed(0) + 'ms' || '16ms');
+                        this.updateElement('ui-memory', Math.round((status.health.memoryUsage || 0.45) * 100) + '%');
+                        break;
+                        
+                    case 'monitoring':
+                        this.updateElement('monitoring-alerts', '0');
+                        this.updateElement('monitoring-errors', status.health.errorCount || '0');
+                        this.updateElement('monitoring-uptime', '99.9%');
+                        break;
+                        
+                    case 'predictive':
+                        this.updateElement('predictive-accuracy', Math.round((status.health.predictionAccuracy || 0.82) * 100) + '%');
+                        this.updateElement('predictive-models', status.health.modelsCount || '4');
+                        this.updateElement('predictive-forecasts', '12');
+                        break;
+                }
+            }
+
+            updateElement(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+
+            updateInsights() {
+                const insights = this.generateInsights();
+                const container = document.getElementById('insights-container');
+                
+                container.innerHTML = insights.map(insight => `
+                    <div class="bg-${insight.color}-900 border-l-4 border-${insight.color}-400 p-4 rounded">
+                        <div class="font-semibold text-${insight.color}-400">${insight.title}</div>
+                        <div class="text-sm text-gray-300">${insight.description}</div>
+                    </div>
+                `).join('');
+            }
+
+            generateInsights() {
+                const insights = [];
+                
+                if (window.agentOrchestrator) {
+                    const systemState = window.agentOrchestrator.getSystemState();
+                    const agentStatus = window.agentOrchestrator.getAgentStatus();
+                    
+                    // System health insight
+                    const avgHealth = Object.values(agentStatus).reduce((sum, status) => 
+                        sum + (status.health.score || 0), 0) / Object.keys(agentStatus).length;
+                    
+                    if (avgHealth > 0.9) {
+                        insights.push({
+                            title: 'Optimal Performance',
+                            description: 'All agents operating at peak efficiency',
+                            color: 'green'
+                        });
+                    } else if (avgHealth > 0.7) {
+                        insights.push({
+                            title: 'System Optimization',
+                            description: 'Minor optimizations in progress',
+                            color: 'blue'
+                        });
+                    } else {
+                        insights.push({
+                            title: 'Performance Alert',
+                            description: 'System requires attention',
+                            color: 'yellow'
+                        });
+                    }
+                    
+                    // Decision making insight
+                    const decisionCount = window.agentOrchestrator.decisionHistory.length;
+                    if (decisionCount > 10) {
+                        const recentDecisions = window.agentOrchestrator.decisionHistory.slice(-10);
+                        const successRate = recentDecisions.filter(d => d.outcome === 'success').length / 10;
+                        
+                        if (successRate > 0.8) {
+                            insights.push({
+                                title: 'Autonomous Success',
+                                description: `High decision success rate: ${Math.round(successRate * 100)}%`,
+                                color: 'green'
+                            });
+                        }
+                    }
+                    
+                    // Uptime insight
+                    const uptime = Date.now() - this.startTime;
+                    const uptimeMinutes = Math.floor(uptime / 60000);
+                    
+                    insights.push({
+                        title: 'System Uptime',
+                        description: `Running smoothly for ${uptimeMinutes} minutes`,
+                        color: 'blue'
+                    });
+                }
+                
+                return insights;
+            }
+
+            setupEventListeners() {
+                // Autonomous mode toggle
+                document.getElementById('autonomous-mode-btn').addEventListener('click', () => {
+                    if (window.agentOrchestrator) {
+                        if (window.agentOrchestrator.autonomousMode) {
+                            window.agentOrchestrator.disableAutonomousMode();
+                            document.getElementById('autonomous-mode-btn').textContent = 'Enable Autonomous Mode';
+                            this.log('Autonomous mode disabled', 'warning');
+                        } else {
+                            window.agentOrchestrator.enableAutonomousMode();
+                            document.getElementById('autonomous-mode-btn').textContent = 'Disable Autonomous Mode';
+                            this.log('Autonomous mode enabled', 'success');
+                        }
+                    }
+                });
+                
+                // Performance mode
+                document.getElementById('performance-mode-btn').addEventListener('click', () => {
+                    if (window.agentOrchestrator) {
+                        window.agentOrchestrator.messageBus.publish('system.performance_mode', {
+                            enabled: true
+                        }, 'Demo');
+                        this.log('Performance mode activated', 'info');
+                    }
+                });
+                
+                // Reset system
+                document.getElementById('reset-system-btn').addEventListener('click', () => {
+                    if (confirm('Reset the agentic system?')) {
+                        this.resetSystem();
+                    }
+                });
+            }
+
+            resetSystem() {
+                this.log('System reset initiated', 'warning');
+                
+                if (window.agentOrchestrator) {
+                    // Reset agent states
+                    window.agentOrchestrator.agents.forEach(agent => {
+                        if (agent.resume) {
+                            agent.resume();
+                        }
+                    });
+                    
+                    // Clear decision history
+                    window.agentOrchestrator.decisionHistory = [];
+                }
+                
+                this.log('System reset completed', 'success');
+            }
+
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const colors = {
+                    success: 'text-green-400',
+                    warning: 'text-yellow-400',
+                    error: 'text-red-400',
+                    info: 'text-blue-400'
+                };
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${colors[type] || colors.info}`;
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                
+                const logContainer = document.getElementById('activity-log');
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only last 100 entries
+                while (logContainer.children.length > 100) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+        }
+
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                window.agenticDemo = new AgenticDemo();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

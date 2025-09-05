@@ -283,18 +283,18 @@
     <script>
         // Live data (this would come from your ESPN API)
         let liveData = [
-            {team: 'MXLB', owner: 'JOHANSEN_TYLER', projected: 105.33, actual: 21.24, isLive: true, rank: 1},
+            {team: 'MXLB', owner1: 'JOHANSEN_TYLER', owner2: 'ABREGO_JASON', isCoOwned: true, projected: 105.33, actual: 21.24, isLive: true, rank: 1},
             {team: 'PCX', owner: 'THORSEN_KYLE', projected: 105.22, actual: 0.00, isLive: false, rank: 2},
-            {team: 'MRYJ', owner: 'ALDEN-ANDERSON', projected: 105.18, actual: 0.00, isLive: false, rank: 3},
-            {team: 'PKMC', owner: 'KASPER_PAT', projected: 104.60, actual: 0.00, isLive: false, rank: 4},
-            {team: 'LNO', owner: 'KNABE_JUSTIN', projected: 103.82, actual: 11.50, isLive: true, rank: 5},
+            {team: 'MRYJ', owner: 'ALDEN-ANDERSON_ANDY', projected: 105.18, actual: 0.00, isLive: false, rank: 3},
+            {team: 'PKMC', owner1: 'KASPER_PAT', owner2: 'CONLON_MIKE', isCoOwned: true, projected: 104.60, actual: 0.00, isLive: false, rank: 4},
+            {team: 'LNO', owner1: 'KNABE_JUSTIN', owner2: 'HAHN_CHRIS', isCoOwned: true, projected: 103.82, actual: 11.50, isLive: true, rank: 5},
             {team: 'BRIM', owner: 'FEATHERS_JASON', projected: 101.91, actual: 13.20, isLive: true, rank: 6},
             {team: 'WZRD', owner: 'OLSON_WES', projected: 100.36, actual: 0.00, isLive: false, rank: 7},
             {team: 'JAGB', owner: 'GOWERY_GRANT', projected: 99.86, actual: 11.90, isLive: true, rank: 8},
             {team: 'TNT', owner: 'SWEET_DERRICK', projected: 99.21, actual: 8.60, isLive: true, rank: 9},
             {team: 'CHLK', owner: 'FEHLHABER_STEVE', projected: 98.75, actual: 0.00, isLive: false, rank: 10},
-            {team: 'GFM', owner: 'TETZLAFF_LANCE', projected: 97.04, actual: 0.00, isLive: false, rank: 11},
-            {team: 'TACT', owner: 'CUPERY_NICK', projected: 94.20, actual: 2.00, isLive: true, rank: 12}
+            {team: 'GFM', owner1: 'TETZLAFF_LANCE', owner2: 'TVEDTEN_OLE', isCoOwned: true, projected: 97.04, actual: 0.00, isLive: false, rank: 11},
+            {team: 'TACT', owner1: 'CUPERY_NICK', owner2: 'SOVIAK_PAT', isCoOwned: true, projected: 94.20, actual: 2.00, isLive: true, rank: 12}
         ];
 
         const median = 101.13;
@@ -350,7 +350,7 @@
                         </div>
                         <div>
                             <div class="font-bold text-white text-lg">${team.team}</div>
-                            <div class="text-xs text-gray-400 truncate w-32">${team.owner}</div>
+                            <div class="text-xs text-gray-400 truncate w-32">${RFFLUtils.formatOwnership(team.isCoOwned, (team.owner1 || team.owner)?.split('_').join(' '), team.owner2?.split('_').join(' '))}</div>
                         </div>
                     </div>
 

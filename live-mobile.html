@@ -79,7 +79,8 @@
 <body class="bg-gray-900 text-white">
 
     <!-- Live indicator banner -->
-    <div class="fixed top-0 left-0 right-0 z-50 live-badge text-center py-1 text-xs font-bold text-white live-pulse safe-area-top">
+    <div class="fixed top-0 left-0 right-0 z-50 live-badge text-center py-1 text-xs font-bold text-white live-pulse safe-area-top" role="banner" aria-live="polite">
+        <span class="sr-only">Live updates active for Week 1 scoring</span>
         🔴 LIVE WEEK 1 SCORING
     </div>
 
@@ -99,25 +100,52 @@
                 </div>
             </div>
 
-            <!-- Live Median Display -->
-            <div class="median-live rounded-2xl p-4">
+            <!-- Enhanced Live Median Display -->
+            <div class="median-live rounded-2xl p-4 content-stack">
                 <div class="text-center">
-                    <div class="text-sm text-gray-300 mb-1">Current League Median</div>
-                    <div id="live-median" class="text-4xl font-black text-white live-pulse">
+                    <div class="text-micro text-gray-300 mb-1">Current League Median</div>
+                    <div id="live-median" class="text-display text-white live-pulse">
                         <span class="text-red-400" id="median-value">--</span>
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        6th: <span id="sixth-score" class="text-yellow-300">--</span> • 
-                        7th: <span id="seventh-score" class="text-yellow-300">--</span>
+                    <div class="text-caption text-gray-400 mt-1">
+                        6th: <span id="sixth-score" class="text-warning-400">--</span> • 
+                        7th: <span id="seventh-score" class="text-warning-400">--</span>
                     </div>
                     
-                    <!-- Live score range -->
-                    <div class="flex justify-between text-xs text-gray-400 mt-2">
-                        <div>
-                            Low: <span id="low-score" class="text-red-300">--</span>
+                    <!-- Enhanced Score Range Visualization -->
+                    <div class="mt-4">
+                        <div class="median-tracker h-3 rounded-full relative overflow-hidden">
+                            <div class="median-line absolute top-0 left-1/2" id="median-marker"></div>
                         </div>
-                        <div>
-                            High: <span id="high-score" class="text-green-300">--</span>
+                        <div class="flex justify-between text-xs text-gray-400 mt-2">
+                            <div class="flex flex-col items-start">
+                                <span class="text-error-400 font-medium" id="low-score">--</span>
+                                <span class="text-micro opacity-70">Low</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-median-color font-medium" id="median-display">--</span>
+                                <span class="text-micro opacity-70">Median</span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-success-400 font-medium" id="high-score">--</span>
+                                <span class="text-micro opacity-70">High</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Win/Loss Distribution -->
+                    <div class="mt-4 pt-3 border-t border-gray-700">
+                        <div class="flex items-center justify-center gap-6 text-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-success-500"></div>
+                                <span class="text-success-400 font-medium" id="win-count">0</span>
+                                <span class="text-caption text-gray-400">Above</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-error-500"></div>
+                                <span class="text-error-400 font-medium" id="loss-count">0</span>
+                                <span class="text-caption text-gray-400">Below</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -145,12 +173,12 @@
     <div class="px-4 py-4">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold text-white">Live Leaderboard</h2>
-            <button id="auto-refresh-toggle" class="px-3 py-1 bg-red-600 text-white text-xs rounded-full font-medium">
-                AUTO: ON
+            <button id="auto-refresh-toggle" class="px-3 py-1 bg-red-600 text-white text-xs rounded-full font-medium touch-target" aria-label="Toggle automatic refresh" role="switch" aria-checked="true">
+                <span aria-hidden="true">AUTO: ON</span>
             </button>
         </div>
         
-        <div id="live-leaderboard" class="space-y-2">
+        <div id="live-leaderboard" class="space-y-2" role="region" aria-label="Live fantasy football leaderboard" aria-live="polite">
             <!-- Live scores will be populated here -->
         </div>
     </div>
@@ -224,18 +252,18 @@
             getSimulatedLiveData() {
                 // This simulates the actual live data from your ESPN CLI
                 return [
-                    {team: 'MXLB', owner: 'JOHANSEN_TYLER', projected: 105.33, actual: 21.24, isLive: true},
+                    {team: 'MXLB', owner1: 'JOHANSEN_TYLER', owner2: 'ABREGO_JASON', isCoOwned: true, projected: 105.33, actual: 21.24, isLive: true},
                     {team: 'PCX', owner: 'THORSEN_KYLE', projected: 105.22, actual: 0.00, isLive: false},
-                    {team: 'MRYJ', owner: 'ALDEN-ANDERSON', projected: 105.18, actual: 0.00, isLive: false},
-                    {team: 'PKMC', owner: 'KASPER_PAT', projected: 104.60, actual: 0.00, isLive: false},
-                    {team: 'LNO', owner: 'KNABE_JUSTIN', projected: 103.82, actual: 11.50, isLive: true},
+                    {team: 'MRYJ', owner: 'ALDEN-ANDERSON_ANDY', projected: 105.18, actual: 0.00, isLive: false},
+                    {team: 'PKMC', owner1: 'KASPER_PAT', owner2: 'CONLON_MIKE', isCoOwned: true, projected: 104.60, actual: 0.00, isLive: false},
+                    {team: 'LNO', owner1: 'KNABE_JUSTIN', owner2: 'HAHN_CHRIS', isCoOwned: true, projected: 103.82, actual: 11.50, isLive: true},
                     {team: 'BRIM', owner: 'FEATHERS_JASON', projected: 101.91, actual: 13.20, isLive: true},
                     {team: 'WZRD', owner: 'OLSON_WES', projected: 100.36, actual: 0.00, isLive: false},
                     {team: 'JAGB', owner: 'GOWERY_GRANT', projected: 99.86, actual: 11.90, isLive: true},
                     {team: 'TNT', owner: 'SWEET_DERRICK', projected: 99.21, actual: 8.60, isLive: true},
                     {team: 'CHLK', owner: 'FEHLHABER_STEVE', projected: 98.75, actual: 0.00, isLive: false},
-                    {team: 'GFM', owner: 'TETZLAFF_LANCE', projected: 97.04, actual: 0.00, isLive: false},
-                    {team: 'TACT', owner: 'CUPERY_NICK', projected: 94.20, actual: 2.00, isLive: true}
+                    {team: 'GFM', owner1: 'TETZLAFF_LANCE', owner2: 'TVEDTEN_OLE', isCoOwned: true, projected: 97.04, actual: 0.00, isLive: false},
+                    {team: 'TACT', owner1: 'CUPERY_NICK', owner2: 'SOVIAK_PAT', isCoOwned: true, projected: 94.20, actual: 2.00, isLive: true}
                 ];
             }
 
@@ -324,58 +352,97 @@
                                      team.isLive && team.actual < team.projected * 0.8 ? '📉' : '';
                 
                 div.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <!-- Left: Rank & Team -->
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-sm font-bold text-white">
-                                ${rank}
-                            </div>
-                            <div>
-                                <div class="font-black text-white text-lg flex items-center gap-2">
-                                    ${team.team} ${trendIndicator}
-                                    ${isLeader ? '👑' : ''}
+                    <div class="content-stack-sm">
+                        <!-- Enhanced Header Row -->
+                        <div class="flex items-center justify-between">
+                            <!-- Left: Rank & Team Info -->
+                            <div class="flex items-center space-x-3">
+                                <div class="relative touch-target">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-neutral-600 to-neutral-700 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-md">
+                                        ${rank}
+                                    </div>
+                                    ${isLeader ? '<div class="absolute -top-1 -right-1 text-lg">👑</div>' : ''}
                                 </div>
-                                <div class="text-xs text-gray-400 truncate w-28">${team.owner.split('_').join(' ')}</div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-title text-white flex items-center gap-2">
+                                        <span class="font-black">${team.team}</span>
+                                        ${trendIndicator}
+                                        ${statusBadge}
+                                    </div>
+                                    <div class="text-caption text-gray-400 truncate">${RFFLUtils.formatOwnership(team.isCoOwned, (team.owner1 || team.owner)?.split('_').join(' '), team.owner2?.split('_').join(' '))}</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Score & Status -->
+                            <div class="text-right">
+                                <div class="text-display font-black text-white score-value" id="score-${team.team}">
+                                    ${team.currentScore.toFixed(1)}
+                                </div>
+                                <div class="text-caption text-gray-400">
+                                    ${team.isLive ? `→ ${team.projected.toFixed(1)}` : 'Projected'}
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Center: Score -->
-                        <div class="text-center">
-                            <div class="text-3xl font-black text-white score-value" id="score-${team.team}">
-                                ${team.currentScore.toFixed(1)}
-                            </div>
-                            <div class="text-xs text-gray-400">
-                                ${team.isLive ? `Proj: ${team.projected.toFixed(1)}` : 'Projected'}
+                        <!-- Enhanced Median Comparison -->
+                        <div class="bg-gradient-to-r from-transparent via-neutral-800/50 to-transparent rounded-xl p-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-caption text-gray-400">vs Median</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-xl font-bold ${team.result === 'WIN' ? 'text-success-400' : 'text-error-400'}">
+                                        ${team.marginVsMedian >= 0 ? '+' : ''}${team.marginVsMedian.toFixed(1)}
+                                    </div>
+                                    <div class="status-chip ${team.result === 'WIN' ? 'win' : 'loss'}">
+                                        ${team.result}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Right: vs Median -->
-                        <div class="text-right">
-                            <div class="text-lg font-bold ${team.result === 'WIN' ? 'text-green-400' : 'text-red-400'}">
-                                ${team.marginVsMedian >= 0 ? '+' : ''}${team.marginVsMedian.toFixed(1)}
+                        ${team.isLive ? `
+                            <!-- Enhanced Performance Tracking -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-caption text-gray-400">Performance</span>
+                                    <span class="text-sm font-medium ${
+                                        team.actual > team.projected ? 'text-success-400' : 
+                                        team.actual > team.projected * 0.8 ? 'text-warning-400' : 'text-error-400'
+                                    }">${((team.actual / team.projected) * 100).toFixed(0)}%</span>
+                                </div>
+                                
+                                <!-- Enhanced Progress Bar -->
+                                <div class="relative">
+                                    <div class="score-progress h-2 rounded-full overflow-hidden">
+                                        <div class="score-progress-fill h-full rounded-full transition-all duration-800 ${
+                                            team.actual > team.projected ? 'bg-gradient-to-r from-success-500 to-success-400' :
+                                            team.actual > team.projected * 0.8 ? 'bg-gradient-to-r from-warning-500 to-warning-400' :
+                                            'bg-gradient-to-r from-error-500 to-error-400'
+                                        } ${team.actual > team.projected ? 'colorblind-pattern-win' : 'colorblind-pattern-loss'}" 
+                                        style="width: ${Math.min(100, Math.max(5, (team.actual / team.projected) * 100))}%"></div>
+                                    </div>
+                                    
+                                    <!-- Projection marker -->
+                                    <div class="absolute top-0 right-0 w-1 h-2 bg-neutral-400 rounded-full opacity-60"></div>
+                                </div>
+                                
+                                <!-- Live update indicator -->
+                                <div class="flex items-center justify-center">
+                                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                                        <div class="w-1 h-1 bg-live-color rounded-full animate-pulse"></div>
+                                        <span>Live scoring</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-xs ${team.result === 'WIN' ? 'text-green-300' : 'text-red-300'}">
-                                vs Median
+                        ` : `
+                            <!-- Pre-game status -->
+                            <div class="text-center py-2">
+                                <div class="text-caption text-gray-500 flex items-center justify-center gap-2">
+                                    <div class="w-2 h-2 bg-gray-500 rounded-full opacity-60"></div>
+                                    <span>Game starts soon</span>
+                                </div>
                             </div>
-                            ${statusBadge}
-                        </div>
+                        `}
                     </div>
-
-                    ${team.isLive ? `
-                        <div class="mt-3">
-                            <div class="flex justify-between text-xs text-gray-400 mb-1">
-                                <span>Performance vs Proj</span>
-                                <span>${((team.actual / team.projected) * 100).toFixed(0)}%</span>
-                            </div>
-                            <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-500 ${
-                                    team.actual > team.projected ? 'bg-gradient-to-r from-green-400 to-green-500' :
-                                    team.actual > team.projected * 0.8 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-                                    'bg-gradient-to-r from-red-400 to-red-500'
-                                }" style="width: ${Math.min(100, Math.max(10, (team.actual / team.projected) * 100))}%"></div>
-                            </div>
-                        </div>
-                    ` : ''}
                 `;
 
                 return div;
