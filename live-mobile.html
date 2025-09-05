@@ -166,23 +166,18 @@
             }
 
             async init() {
-                try {
-                    this.debugMode && console.log('🔴 Live Mobile App initializing...');
-                    
-                    // Load initial data
-                    await this.loadLiveData();
-                    
-                    // Setup refresh timer
-                    this.startAutoRefresh();
-                    
-                    // Setup event handlers
-                    this.setupEventHandlers();
-                    
-                    this.debugMode && console.log('✅ Live Mobile App ready!');
-                } catch (error) {
-                    console.error('Failed to initialize Live Mobile App:', error);
-                    this.showErrorState();
-                }
+                this.debugMode && console.log('🔴 Live Mobile App initializing...');
+                
+                // Load initial data - this handles its own error states
+                await this.loadLiveData();
+                
+                // Setup refresh timer
+                this.startAutoRefresh();
+                
+                // Setup event handlers
+                this.setupEventHandlers();
+                
+                this.debugMode && console.log('✅ Live Mobile App ready!');
             }
 
             async loadLiveData() {
@@ -210,15 +205,20 @@
                     // Debug: Log fallback data to ensure it's working
                     this.debugMode && console.log('Fallback data loaded:', this.currentData.length, 'teams');
                     
-                    // Only show connection issue if we have no data to display
-                    // For now, always use fallback data successfully
-                    if (this.retryCount >= this.maxRetries && this.debugMode) {
-                        console.warn('Max retries reached, but continuing with simulated data');
+                    // Show connection issue toast but don't block data display
+                    if (this.retryCount >= this.maxRetries) {
+                        this.showConnectionIssue();
                     }
                 } finally {
-                    this.processLiveData();
-                    this.renderLiveScores();
-                    this.updateStats();
+                    // Always process and render data, whether from API or fallback
+                    if (this.currentData && this.currentData.length > 0) {
+                        this.processLiveData();
+                        this.renderLiveScores();
+                        this.updateStats();
+                    } else {
+                        // Only show error state if we truly have no data
+                        this.showErrorState();
+                    }
                 }
             }
 
@@ -270,6 +270,19 @@
                 setTimeout(() => {
                     if (toast.parentNode) toast.parentNode.removeChild(toast);
                 }, 5000);
+            }
+
+            formatOwnership(team) {
+                if (team.isCoOwned && team.owner1 && team.owner2) {
+                    const owner1 = team.owner1.split('_').join(' ');
+                    const owner2 = team.owner2.split('_').join(' ');
+                    return `${owner1} & ${owner2}`;
+                } else if (team.owner) {
+                    return team.owner.split('_').join(' ');
+                } else if (team.owner1) {
+                    return team.owner1.split('_').join(' ');
+                }
+                return 'Unknown Owner';
             }
 
             getSimulatedLiveData() {
@@ -345,14 +358,10 @@
                 container.innerHTML = '';
                 
                 // Update median display
-                document.getElementById('median-value').textContent = this.currentMedian.toFixed(2);
-                document.getElementById('sixth-score').textContent = (this.currentMedian + 0.5).toFixed(2);
-                document.getElementById('seventh-score').textContent = (this.currentMedian - 0.5).toFixed(2);
-                
-                // Update range
-                const scores = this.currentData.map(t => t.currentScore);
-                document.getElementById('high-score').textContent = Math.max(...scores).toFixed(2);
-                document.getElementById('low-score').textContent = Math.min(...scores).toFixed(2);
+                const medianElement = document.getElementById('median-value');
+                if (medianElement) {
+                    medianElement.textContent = this.currentMedian.toFixed(2);
+                }
                 
                 this.currentData.forEach((team, index) => {
                     const card = this.createLiveCard(team, index + 1);
@@ -403,7 +412,7 @@
                                         ${trendIndicator}
                                         ${statusBadge}
                                     </div>
-                                    <div class="text-caption text-gray-400 truncate">${RFFLUtils.formatOwnership(team.isCoOwned, (team.owner1 || team.owner)?.split('_').join(' '), team.owner2?.split('_').join(' '))}</div>
+                                    <div class="text-caption text-gray-400 truncate">${this.formatOwnership(team)}</div>
                                 </div>
                             </div>
 
@@ -534,25 +543,10 @@
             }
         }
 
-        // Initialize the live mobile app with error handling
+        // Initialize the live mobile app
         document.addEventListener('DOMContentLoaded', () => {
-            try {
-                const debugMode = new URLSearchParams(window.location.search).has('debug');
-                window.liveApp = new LiveMobileApp({ debug: debugMode });
-            } catch (error) {
-                console.error('Failed to initialize Live Mobile App:', error);
-                document.body.innerHTML = `
-                    <div class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-                        <div class="text-center">
-                            <h1 class="text-xl font-bold mb-2">⚠️ App Failed to Load</h1>
-                            <p class="text-gray-400">Please refresh the page to try again.</p>
-                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-red-600 rounded text-white">
-                                Reload Page
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
+            const debugMode = new URLSearchParams(window.location.search).has('debug');
+            window.liveApp = new LiveMobileApp({ debug: debugMode });
         });
     </script>
 </body>
