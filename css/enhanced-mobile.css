@@ -1,0 +1,65 @@
+/* All new styles for the enhanced mobile UI will go here. */
+
+.enhanced-median-card {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(17, 24, 39, 0.8) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.enhanced-team-card {
+    border-left: 5px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.enhanced-team-card.winning {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%);
+    border-left-color: var(--win-color);
+}
+
+.enhanced-team-card.losing {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%);
+    border-left-color: var(--loss-color);
+}
+
+.enhanced-team-card .status-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 16px;
+}
+
+.enhanced-team-card .score-value {
+    font-size: 1.75rem;
+}
+
+@keyframes score-update-animation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+        color: var(--text-success);
+        text-shadow: 0 0 10px var(--text-success);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.score-updating {
+    animation: score-update-animation 0.6s ease-in-out;
+}
+
+@keyframes card-entry-animation {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.enhanced-team-card {
+    animation: card-entry-animation 0.5s ease-out forwards;
+}

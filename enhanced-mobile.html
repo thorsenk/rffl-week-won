@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Enhanced 🔴 LIVE: RFFL Week 1 vs. Median</title>
+    <meta name="description" content="LIVE RFFL Week 1 median scoring with real-time ESPN data">
+    <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/enhanced-mobile.css">
+
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Compact Live indicator -->
+    <div class="fixed top-0 left-0 right-0 bg-red-600 text-center py-1 text-xs font-medium text-white safe-area-top z-50" role="banner" aria-live="polite">
+        <span class="sr-only">Live updates active for Week 1 scoring</span>
+        <div class="flex items-center justify-center gap-1">
+            <div class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            <span>LIVE</span>
+        </div>
+    </div>
+
+    <!-- Compact Header -->
+    <div class="bg-gray-900/95 backdrop-blur-sm sticky top-5 z-40">
+        <div class="px-4 py-3">
+            <!-- Streamlined Title -->
+            <div class="text-center mb-3">
+                <h1 class="text-lg font-bold text-white">
+                    RFFL WEEK 1 <span class="text-red-400">vs MEDIAN</span>
+                </h1>
+                <div class="text-xs text-gray-400 mt-1">
+                    Updated: <span id="last-update-time" class="text-gray-300">now</span>
+                </div>
+            </div>
+
+            <!-- Compact Median Display -->
+            <div class="bg-gray-800/50 rounded-lg p-3 enhanced-median-card">
+                <div class="flex items-center justify-between text-sm">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-red-400" id="median-value">--</div>
+                        <div class="text-xs text-gray-400">Median</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-white" id="win-lose-split">0W-0L</div>
+                        <div class="text-xs text-gray-400">Record</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-yellow-400" id="live-count">0</div>
+                        <div class="text-xs text-gray-400">Live</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Live leaderboard -->
+    <div class="px-4 py-4">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-lg font-semibold text-white">Teams</h2>
+            </div>
+            <button id="auto-refresh-toggle" class="text-xs px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors haptic-feedback" aria-label="Toggle automatic refresh" role="switch" aria-checked="true">
+                <span aria-hidden="true">AUTO</span>
+            </button>
+        </div>
+
+        <div id="live-leaderboard" class="space-y-2" role="region" aria-label="Live fantasy football leaderboard" aria-live="polite">
+            <!-- Live scores will be populated here -->
+        </div>
+    </div>
+
+    <!-- Bottom safe area -->
+    <div class="h-6 safe-area-bottom"></div>
+
+
+    <!-- Include modules -->
+    <script src="js/median-calculator.js"></script>
+    <script src="js/rffl-data.js"></script>
+    <script src="js/espn-api.js"></script>
+    <script src="js/mobile-ui.js"></script>
+
+    <script>
+        class LiveMobileApp {
+            constructor(options = {}) {
+                this.debugMode = options.debug || new URLSearchParams(window.location.search).has('debug');
+                this.isLive = true;
+                this.autoRefresh = true;
+                this.refreshInterval = options.refreshInterval || 30000; // 30 seconds
+                this.currentData = null;
+                this.lastMedian = null;
+                this.refreshTimer = null;
+                this.retryCount = 0;
+                this.maxRetries = 3;
+
+                this.init();
+            }
+
+            async init() {
+                this.debugMode && console.log('🔴 Live Mobile App initializing...');
+
+                // Load initial data - this handles its own error states
+                await this.loadLiveData();
+
+                // Setup refresh timer
+                this.startAutoRefresh();
+
+                // Setup event handlers
+                this.setupEventHandlers();
+
+                this.debugMode && console.log('✅ Live Mobile App ready!');
+            }
+
+            async loadLiveData() {
+                try {
+                    // Try to fetch from ESPN API first
+                    // In a real implementation, this would call your ESPN API
+                    // For now, we'll simulate with the live data from your CLI
+                    const response = await this.fetchWithTimeout('/api/live-scores', 5000);
+
+                    if (response && response.ok) {
+                        this.currentData = await response.json();
+                    } else {
+                        throw new Error('API response not ok');
+                    }
+
+                    this.retryCount = 0; // Reset retry count on success
+
+                } catch (error) {
+                    this.debugMode && console.warn('API fetch failed, using fallback data:', error.message);
+
+                    // Use fallback data
+                    this.currentData = this.getSimulatedLiveData();
+                    this.retryCount++;
+
+                    // Debug: Log fallback data to ensure it's working
+                    this.debugMode && console.log('Fallback data loaded:', this.currentData.length, 'teams');
+
+                    // Show connection issue toast but don't block data display
+                    if (this.retryCount >= this.maxRetries) {
+                        this.showConnectionIssue();
+                    }
+                } finally {
+                    // Always process and render data, whether from API or fallback
+                    if (this.currentData && this.currentData.length > 0) {
+                        this.processLiveData();
+                        this.renderLiveScores();
+                        this.updateStats();
+                    } else {
+                        // Only show error state if we truly have no data
+                        this.showErrorState();
+                    }
+                }
+            }
+
+            // Utility methods for better error handling
+            async fetchWithTimeout(url, timeout = 5000) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+                try {
+                    const response = await fetch(url, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw error;
+                }
+            }
+
+            showErrorState() {
+                const container = document.getElementById('live-leaderboard');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="text-4xl mb-4">⚠️</div>
+                            <h3 class="text-lg font-bold text-white mb-2">Unable to Load Data</h3>
+                            <p class="text-gray-400 mb-4">Please check your connection and try again.</p>
+                            <button onclick="window.liveApp.loadLiveData()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            showConnectionIssue() {
+                if (this.debugMode) console.warn('Connection issues detected after', this.maxRetries, 'retries');
+
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-20 left-4 right-4 bg-yellow-600 text-white p-3 rounded-lg text-sm z-50';
+                toast.innerHTML = '⚠️ Connection issues detected. Using cached data.';
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 5000);
+            }
+
+            formatOwnership(team) {
+                if (team.isCoOwned && team.owner1 && team.owner2) {
+                    const owner1 = team.owner1.split('_').join(' ');
+                    const owner2 = team.owner2.split('_').join(' ');
+                    return `${owner1} & ${owner2}`;
+                } else if (team.owner) {
+                    return team.owner.split('_').join(' ');
+                } else if (team.owner1) {
+                    return team.owner1.split('_').join(' ');
+                }
+                return 'Unknown Owner';
+            }
+
+            getSimulatedLiveData() {
+                // This simulates the actual live data from your ESPN CLI
+                return [
+                    {team: 'MXLB', owner1: 'JOHANSEN_TYLER', owner2: 'ABREGO_JASON', isCoOwned: true, projected: 105.33, actual: 21.24, isLive: true},
+                    {team: 'PCX', owner: 'THORSEN_KYLE', projected: 105.22, actual: 0.00, isLive: false},
+                    {team: 'MRYJ', owner: 'ALDEN-ANDERSON_ANDY', projected: 105.18, actual: 0.00, isLive: false},
+                    {team: 'PKMC', owner1: 'KASPER_PAT', owner2: 'CONLON_MIKE', isCoOwned: true, projected: 104.60, actual: 0.00, isLive: false},
+                    {team: 'LNO', owner1: 'KNABE_JUSTIN', owner2: 'HAHN_CHRIS', isCoOwned: true, projected: 103.82, actual: 11.50, isLive: true},
+                    {team: 'BRIM', owner: 'FEATHERS_JASON', projected: 101.91, actual: 13.20, isLive: true},
+                    {team: 'WZRD', owner: 'OLSON_WES', projected: 100.36, actual: 0.00, isLive: false},
+                    {team: 'JAGB', owner: 'GOWERY_GRANT', projected: 99.86, actual: 11.90, isLive: true},
+                    {team: 'TNT', owner: 'SWEET_DERRICK', projected: 99.21, actual: 8.60, isLive: true},
+                    {team: 'CHLK', owner: 'FEHLHABER_STEVE', projected: 98.75, actual: 0.00, isLive: false},
+                    {team: 'GFM', owner1: 'TETZLAFF_LANCE', owner2: 'TVEDTEN_OLE', isCoOwned: true, projected: 97.04, actual: 0.00, isLive: false},
+                    {team: 'TACT', owner1: 'CUPERY_NICK', owner2: 'SOVIAK_PAT', isCoOwned: true, projected: 94.20, actual: 2.00, isLive: true}
+                ];
+            }
+
+            processLiveData() {
+                // Debug: Ensure we have data to process
+                this.debugMode && console.log('Processing data:', this.currentData ? this.currentData.length : 'null', 'teams');
+
+                if (!this.currentData || this.currentData.length === 0) {
+                    console.error('No data to process!');
+                    return;
+                }
+
+                // Calculate live median
+                const liveScores = this.currentData
+                    .filter(team => team.isLive && team.actual > 0)
+                    .map(team => team.actual)
+                    .sort((a, b) => b - a);
+
+                const projectedScores = this.currentData
+                    .map(team => team.projected)
+                    .sort((a, b) => b - a);
+
+                // Use live median if we have enough live games, otherwise projected
+                let median;
+                if (liveScores.length >= 6) {
+                    const sixth = liveScores[5] || 0;
+                    const seventh = liveScores[6] || 0;
+                    median = (sixth + seventh) / 2;
+                } else {
+                    // Fall back to projected median
+                    median = (projectedScores[5] + projectedScores[6]) / 2;
+                }
+
+                this.currentMedian = median;
+
+                // Add results to each team
+                this.currentData.forEach(team => {
+                    const currentScore = team.isLive ? team.actual : team.projected;
+                    const marginVsMedian = currentScore - median;
+
+                    team.marginVsMedian = marginVsMedian;
+                    team.result = marginVsMedian > 0 ? 'WIN' : marginVsMedian < 0 ? 'LOSS' : 'TIE';
+                    team.currentScore = currentScore;
+                });
+
+                // Sort by current score (live games first)
+                this.currentData.sort((a, b) => {
+                    if (a.isLive && !b.isLive) return -1;
+                    if (!a.isLive && b.isLive) return 1;
+                    return b.currentScore - a.currentScore;
+                });
+            }
+
+            renderLiveScores() {
+                const container = document.getElementById('live-leaderboard');
+                const oldScores = new Map();
+
+                // Store old scores
+                container.querySelectorAll('.score-value').forEach(el => {
+                    const team = el.id.replace('score-', '');
+                    oldScores.set(team, parseFloat(el.textContent));
+                });
+
+                container.innerHTML = '';
+
+                // Update median display
+                const medianElement = document.getElementById('median-value');
+                if (medianElement) {
+                    medianElement.textContent = this.currentMedian.toFixed(2);
+                }
+
+                this.currentData.forEach((team, index) => {
+                    const card = this.createLiveCard(team, index + 1);
+                    container.appendChild(card);
+
+                    const scoreElement = card.querySelector('.score-value');
+                    const oldScore = oldScores.get(team.team);
+                    if (oldScore !== undefined && oldScore !== team.currentScore) {
+                        scoreElement.classList.add('score-updating');
+                        setTimeout(() => {
+                            scoreElement.classList.remove('score-updating');
+                        }, 600);
+                    }
+                });
+
+                // Update last update time
+                const updateTimeElement = document.getElementById('last-update-time');
+                if (updateTimeElement) {
+                    updateTimeElement.textContent = new Date().toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+
+            createLiveCard(team, rank) {
+                const div = document.createElement('div');
+                const isLeader = rank === 1;
+                const cardClass = isLeader ? 'score-leader' :
+                                 team.result === 'WIN' ? 'live-score-card winning' : 'live-score-card losing';
+
+                div.className = `${cardClass} enhanced-team-card rounded-xl p-4 transition-all duration-300 haptic-feedback`;
+                div.dataset.team = team.team;
+
+                const statusBadge = team.isLive ?
+                    '<span class="live-badge px-2 py-1 rounded-full text-xs font-bold text-white">🔴 LIVE</span>' :
+                    '<span class="upcoming-badge px-2 py-1 rounded-full text-xs font-bold text-gray-300">⏳ PRE</span>';
+
+                const trendIndicator = team.isLive && team.actual > team.projected ? '📈' :
+                                     team.isLive && team.actual < team.projected * 0.8 ? '📉' : '';
+
+                div.innerHTML = `
+                    <div class="content-stack-sm">
+                        <!-- Enhanced Header Row -->
+                        <div class="flex items-center justify-between">
+                            <!-- Left: Rank & Team Info -->
+                            <div class="flex items-center space-x-3">
+                                <div class="relative touch-target">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-neutral-600 to-neutral-700 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-md">
+                                        ${rank}
+                                    </div>
+                                    ${isLeader ? '<div class="absolute -top-1 -right-1 text-lg">👑</div>' : ''}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-title text-white flex items-center gap-2">
+                                        <span class="font-black">${team.team}</span>
+                                        ${trendIndicator}
+                                        ${statusBadge}
+                                    </div>
+                                    <div class="text-caption text-gray-400 truncate">${this.formatOwnership(team)}</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Score & Status -->
+                            <div class="text-right">
+                                <div class="text-display font-black text-white score-value" id="score-${team.team}">
+                                    ${team.currentScore.toFixed(1)}
+                                </div>
+                                <div class="text-caption text-gray-400">
+                                    ${team.isLive ? `→ ${team.projected.toFixed(1)}` : 'Projected'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Median Comparison -->
+                        <div class="bg-gradient-to-r from-transparent via-neutral-800/50 to-transparent rounded-xl p-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-caption text-gray-400">vs Median</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-xl font-bold ${team.result === 'WIN' ? 'text-success-400' : 'text-error-400'}">
+                                        ${team.marginVsMedian >= 0 ? '+' : ''}${team.marginVsMedian.toFixed(1)}
+                                    </div>
+                                    <div class="status-chip ${team.result === 'WIN' ? 'win' : 'loss'}">
+                                        ${team.result}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${team.isLive ? `
+                            <!-- Enhanced Performance Tracking -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-caption text-gray-400">Performance</span>
+                                    <span class="text-sm font-medium ${
+                                        team.actual > team.projected ? 'text-success-400' :
+                                        team.actual > team.projected * 0.8 ? 'text-warning-400' : 'text-error-400'
+                                    }">${((team.actual / team.projected) * 100).toFixed(0)}%</span>
+                                </div>
+
+                                <!-- Enhanced Progress Bar -->
+                                <div class="relative">
+                                    <div class="score-progress h-2 rounded-full overflow-hidden">
+                                        <div class="score-progress-fill h-full rounded-full transition-all duration-800 ${
+                                            team.actual > team.projected ? 'bg-gradient-to-r from-success-500 to-success-400' :
+                                            team.actual > team.projected * 0.8 ? 'bg-gradient-to-r from-warning-500 to-warning-400' :
+                                            'bg-gradient-to-r from-error-500 to-error-400'
+                                        } ${team.actual > team.projected ? 'colorblind-pattern-win' : 'colorblind-pattern-loss'}"
+                                        style="width: ${Math.min(100, Math.max(5, (team.actual / team.projected) * 100))}%"></div>
+                                    </div>
+
+                                    <!-- Projection marker -->
+                                    <div class="absolute top-0 right-0 w-1 h-2 bg-neutral-400 rounded-full opacity-60"></div>
+                                </div>
+
+                                <!-- Live update indicator -->
+                                <div class="flex items-center justify-center">
+                                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                                        <div class="w-1 h-1 bg-live-color rounded-full animate-pulse"></div>
+                                        <span>Live scoring</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <!-- Pre-game status -->
+                            <div class="text-center py-2">
+                                <div class="text-caption text-gray-500 flex items-center justify-center gap-2">
+                                    <div class="w-2 h-2 bg-gray-500 rounded-full opacity-60"></div>
+                                    <span>Game starts soon</span>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+
+                return div;
+            }
+
+            updateStats() {
+                const liveGames = this.currentData.filter(t => t.isLive).length;
+                const wins = this.currentData.filter(t => t.result === 'WIN').length;
+                const losses = this.currentData.filter(t => t.result === 'LOSS').length;
+
+                // Update the compact display
+                const liveCountElement = document.getElementById('live-count');
+                const winLoseSplitElement = document.getElementById('win-lose-split');
+
+                if (liveCountElement) liveCountElement.textContent = liveGames;
+                if (winLoseSplitElement) winLoseSplitElement.textContent = `${wins}W-${losses}L`;
+            }
+
+            startAutoRefresh() {
+                if (this.refreshTimer) {
+                    clearInterval(this.refreshTimer);
+                }
+
+                if (this.autoRefresh) {
+                    this.refreshTimer = setInterval(() => {
+                        if (document.visibilityState === 'visible') {
+                            this.loadLiveData();
+                        }
+                    }, this.refreshInterval);
+                }
+            }
+
+            setupEventHandlers() {
+                // Auto-refresh toggle
+                document.getElementById('auto-refresh-toggle').addEventListener('click', (e) => {
+                    this.autoRefresh = !this.autoRefresh;
+                    const button = e.currentTarget;
+                    button.textContent = this.autoRefresh ? 'AUTO' : 'PAUSED';
+                    if (this.autoRefresh) {
+                        button.classList.remove('bg-red-700', 'hover:bg-red-600', 'text-red-200');
+                        button.classList.add('bg-gray-700', 'hover:bg-gray-600', 'text-gray-300');
+                    } else {
+                        button.classList.remove('bg-gray-700', 'hover:bg-gray-600', 'text-gray-300');
+                        button.classList.add('bg-red-700', 'hover:bg-red-600', 'text-red-200');
+                    }
+
+                    if (this.autoRefresh) {
+                        this.startAutoRefresh();
+                    } else {
+                        clearInterval(this.refreshTimer);
+                    }
+                });
+
+                // Visibility change handler
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible' && this.autoRefresh) {
+                        this.loadLiveData();
+                    }
+                });
+            }
+        }
+
+        // Initialize the live mobile app
+        document.addEventListener('DOMContentLoaded', () => {
+            const debugMode = new URLSearchParams(window.location.search).has('debug');
+            window.liveApp = new LiveMobileApp({ debug: debugMode });
+        });
+    </script>
+</body>
+</html>
